@@ -1,0 +1,22 @@
+body {
+	background-image: url(assets/img/timg.jpeg);
+	background-position: top center;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+}
+
+ h1 {
+    text-align: center;
+}
+.navigation {
+    height: 50px;
+    background-color: rgb(6, 133, 138);
+}
+#particles-js{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
