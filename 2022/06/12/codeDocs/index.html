@@ -20,28 +20,33 @@
     var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":"mac","style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="My Blog">
-<meta property="og:url" content="https://learneryu3.github.io/index.html">
+  <meta name="description" content="对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用 DoxygenDoxygen 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要. 在程序中, 大部分有用的注释都是针对函数, 类对象等.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 Documneter.jl 生成代码文档">
+<meta property="og:url" content="https://learneryu3.github.io/2022/06/12/codeDocs/index.html">
 <meta property="og:site_name" content="My Blog">
+<meta property="og:description" content="对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用 DoxygenDoxygen 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要. 在程序中, 大部分有用的注释都是针对函数, 类对象等.">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-12T08:23:37.000Z">
+<meta property="article:modified_time" content="2022-06-12T15:30:39.472Z">
 <meta property="article:author" content="Yu-Chengyang">
+<meta property="article:tag" content="Julia">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://learneryu3.github.io/">
+<link rel="canonical" href="https://learneryu3.github.io/2022/06/12/codeDocs/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>My Blog</title>
+  <title>使用 Documneter.jl 生成代码文档 | My Blog</title>
   
 
 
@@ -159,9 +164,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -177,10 +183,9 @@
       <meta itemprop="name" content="My Blog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/06/12/codeDocs/" class="post-title-link" itemprop="url">使用 Documneter.jl 生成代码文档</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          使用 Documneter.jl 生成代码文档
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -213,7 +218,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
+        <p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
 <h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a target="_blank" rel="noopener" href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.</p>
 <p>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
 <p><code>Doxygen</code> 就是比较出名的文档生成工具, 而且是开源的. 它的使用非常方便, 能提取 <code>C++</code>, <code>Java</code>, <code>Python</code>, <code>IDL</code>, <code>PHP</code>, <code>C#</code>, <code>Objective-C</code> 等语言的注释, 从而生成相应的文档. 对于 <code>Doxygen</code> 不支持的语言可能需要编写扩展以提供相应的支持.</p>
@@ -266,106 +271,33 @@
 
 <p>到此, 关于 <code>Documenter.jl</code> 的基本使用就到这里. 更详细的介绍可参见 <a target="_blank" rel="noopener" href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a></p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/Julia/" rel="tag"># Julia</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://learneryu3.github.io/2022/04/01/use-JuMP/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Yu-Chengyang">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="My Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/01/use-JuMP/" class="post-title-link" itemprop="url">使用 JuMP 并配置 Julia 环境</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-01 00:26:14" itemprop="dateCreated datePublished" datetime="2022-04-01T00:26:14+08:00">2022-04-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-03 09:46:36" itemprop="dateModified" datetime="2022-04-03T09:46:36+08:00">2022-04-03</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MIP/" itemprop="url" rel="index"><span itemprop="name">MIP</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MIP/Solver/" itemprop="url" rel="index"><span itemprop="name">Solver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>配置 Julia 调用求解器以及建模的使用环境</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/01/use-JuMP/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/01/use-JuMP/" rel="next" title="使用 JuMP 并配置 Julia 环境">
+      使用 JuMP 并配置 Julia 环境 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
       </footer>
+    
   </article>
   
   
-  
-
-
   
 
 
@@ -418,6 +350,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Doxygen"><span class="nav-number">1.</span> <span class="nav-text">Doxygen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Documenter-jl"><span class="nav-number">2.</span> <span class="nav-text">Documenter.jl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.2.</span> <span class="nav-text">调整文件结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%A9%BA%E6%96%87%E6%A1%A3"><span class="nav-number">2.3.</span> <span class="nav-text">构建一个空文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A"><span class="nav-number">2.4.</span> <span class="nav-text">添加注释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E5%8C%96%E6%96%87%E4%BB%B6"><span class="nav-number">2.5.</span> <span class="nav-text">结构化文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E8%BE%93%E5%87%BA%E5%BD%A2%E5%BC%8F"><span class="nav-number">2.6.</span> <span class="nav-text">其他输出形式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BE%93%E5%87%BA-Tex-%E6%96%87%E4%BB%B6"><span class="nav-number">2.6.1.</span> <span class="nav-text">输出 Tex 文件</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
