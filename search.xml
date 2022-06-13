@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>使用 Documneter.jl 生成代码文档</title>
+    <url>/2022/06/12/codeDocs/</url>
+    <content><![CDATA[<p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
+<h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.</p>
+<span id="more"></span>
+<p>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
+<p><code>Doxygen</code> 就是比较出名的文档生成工具, 而且是开源的. 它的使用非常方便, 能提取 <code>C++</code>, <code>Java</code>, <code>Python</code>, <code>IDL</code>, <code>PHP</code>, <code>C#</code>, <code>Objective-C</code> 等语言的注释, 从而生成相应的文档. 对于 <code>Doxygen</code> 不支持的语言可能需要编写扩展以提供相应的支持.</p>
+<h2 id="Documenter-jl"><a href="#Documenter-jl" class="headerlink" title="Documenter.jl"></a>Documenter.jl</h2><p>对于 Julia, 我们可以使用其提供的文档生成工具 <a href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a> 进行代码文档生成. <code>Documenter</code> 通过结合 <code>Markdown</code> 文件和 <code>Julia</code> 的文档系统来生成代码文档.</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>在 <font color="blue">Julia REPL</font> 下执行如下命令:</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">julia&gt; <span class="comment"># 键入 ]</span></span><br><span class="line">pkg&gt; add Documenter</span><br></pre></td></tr></table></figure>
+<h3 id="调整文件结构"><a href="#调整文件结构" class="headerlink" title="调整文件结构"></a>调整文件结构</h3><p>假设我们需要为 <code>Example.jl</code> 生成代码文档, 它的文档结构如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Example/</span><br><span class="line">|--- src/</span><br><span class="line">|    |--- Example.jl</span><br><span class="line">... # 其他不重要的文件</span><br></pre></td></tr></table></figure>
+<p>我们必须决定一个生成文档的位置, 推荐使用 <code>docs/</code> 文件夹, 结构如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Example/</span><br><span class="line">|--- docs/</span><br><span class="line">|     |--- ...</span><br><span class="line">|--- src/</span><br><span class="line">|     |--- Example.jl</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>在 <code>docs/</code> 文件夹下我们需要添加两个东西</p>
+<ul>
+<li>包含 Markdown 文件的文件夹 (其中的文件被用来构建文档)</li>
+<li>一个用于控制构建文档的 Julia 脚本</li>
+</ul>
+<p>推荐使用如下命名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docs/</span><br><span class="line">|--- src/</span><br><span class="line">|--- make.jl</span><br></pre></td></tr></table></figure>
+<h3 id="构建一个空文档"><a href="#构建一个空文档" class="headerlink" title="构建一个空文档"></a>构建一个空文档</h3><p>首先我们来构建一个空的文档, 在 <code>make.jl</code> 文件中添加如下代码</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">push!(<span class="literal">LOAD_PATH</span>, <span class="string">&quot;../src/&quot;</span>)</span><br><span class="line"><span class="keyword">using</span> Documenter, Example</span><br><span class="line"></span><br><span class="line">makedocs(sitename=<span class="string">&quot;My Documentation&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p><code>push!(LOAD_PATH, &quot;../src/&quot;)</code> 是为了保证 <code>Example.jl</code> 能够被 Julia 找到(<font color="red">要确保你需要生成的代码文件包能被 Julia 找到</font>).<br>然后在 <code>docs/src/</code> 目录下添加一个 <code>index.md</code> 文件, 接着在 <code>docs/</code> 目录下运行 <code>make.jl</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">julia make.jl</span><br></pre></td></tr></table></figure>
+<p>然后你就会看到类似如下的输出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ Info: SetupBuildDirectory: setting up build directory.</span><br><span class="line">[ Info: Doctest: running doctests.</span><br><span class="line">[ Info: ExpandTemplates: expanding markdown templates.</span><br><span class="line">[ Info: CrossReferences: building cross-references.</span><br><span class="line">[ Info: CheckDocument: running document checks.</span><br><span class="line">[ Info: Populate: populating indices.</span><br><span class="line">[ Info: RenderDocument: rendering document.</span><br><span class="line">[ Info: HTMLWriter: rendering HTML pages.</span><br></pre></td></tr></table></figure>
+<p>此时, <code>docs/</code> 目录下会生成一个新的文件夹 <code>build/</code>, 其结构如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">build/</span><br><span class="line">├── assets</span><br><span class="line">│   ├── documenter.js</span><br><span class="line">│   ├── search.js</span><br><span class="line">│   ├── themes</span><br><span class="line">│   │   ├── documenter-dark.css</span><br><span class="line">│   │   └── documenter-light.css</span><br><span class="line">│   ├── themeswap.js</span><br><span class="line">│   └── warner.js</span><br><span class="line">├── index.html</span><br><span class="line">├── search</span><br><span class="line">│   └── index.html</span><br><span class="line">└── search_index.js</span><br></pre></td></tr></table></figure>
+<p>此时点击 <code>index.html</code> 就会看到一个空白的网页.</p>
+<h3 id="添加注释"><a href="#添加注释" class="headerlink" title="添加注释"></a>添加注释</h3><p>接下来我们把在 <code>Example</code> 模块里面定义的 <code>docstring</code> 添加在 <code>index.md</code> 文件中. 首先我们来看一下 <code>Example.jl</code> 中的内容</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> Example</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> func</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    func(x)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Returns double the number `x` plus `1`.</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">func(x) = <span class="number">2</span>x + <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>然后在 <code>index.md</code> 文件中添加</p>
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="section"># Example.jl Documentation</span></span><br><span class="line"></span><br><span class="line"><span class="code">```@docs</span></span><br><span class="line"><span class="code">func(x)</span></span><br><span class="line"><span class="code">```</span></span><br></pre></td></tr></table></figure>
+<p>再次运行 <code>make.jl</code> , 打开 <code>index.html</code> 就可以看见新添加入 <code>index.md</code> 的代码注释.</p>
+<blockquote>
+<p>如果需要添加多个注释对象, 使用多个 <code>@docs</code> 块即可.</p>
+</blockquote>
+<h3 id="结构化文件"><a href="#结构化文件" class="headerlink" title="结构化文件"></a>结构化文件</h3><p>有时一个 <code>Package</code> 包含多个文件, 每个文件可能代表不同的功能. 此时, 我们不能将所有的注释都写入一个 Markdown 文件中, 这样会使文件比较臃肿, 不够结构化. 因此, 我们需要使用多个 Markdown 文件将代码注释分开. 在生成文档时就会出现处理不同文件之间关系的问题, 如:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docs/</span><br><span class="line">|--- src/</span><br><span class="line">|    |--- index.md</span><br><span class="line">|    |--- guide.md</span><br><span class="line">|    |--- examples.md</span><br><span class="line">|    |--- ref.md</span><br><span class="line">|--- make.jl</span><br></pre></td></tr></table></figure>
+<p>此时我们可以在 <code>make.jl</code> 文件中添加</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">_pages = [</span><br><span class="line">    <span class="string">&quot;Example.jl&quot;</span> =&gt; [</span><br><span class="line">        <span class="string">&quot;home&quot;</span> =&gt; <span class="string">&quot;index.md&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Manual&quot;</span> =&gt; [</span><br><span class="line">            <span class="string">&quot;Guide&quot;</span> =&gt; <span class="string">&quot;guide.md&quot;</span>,</span><br><span class="line">            <span class="string">&quot;Examples&quot;</span> =&gt; <span class="string">&quot;examples.md&quot;</span>,</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&quot;Reference&quot;</span> =&gt; <span class="string">&quot;ref.md&quot;</span>,</span><br><span class="line">    ]</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">makedocs(</span><br><span class="line">    pages = _pages,</span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>这样就可以在生成网页时显示出我们期待的文档结构.</p>
+<h3 id="其他输出形式"><a href="#其他输出形式" class="headerlink" title="其他输出形式"></a>其他输出形式</h3><p>如果我们不想要 <code>html</code> 形式的代码文档, 我们也可以生成 <code>pdf</code> 形式的文档. 通过借助 <code>latex</code> 使获取 <code>pdf</code> 形式的文档变得简单.<br>使用如下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">using Documenter</span><br><span class="line">makedocs(format = Documenter.Latex(), ...)</span><br></pre></td></tr></table></figure>
+<p>可以选择通过调用 <code>Latex</code> 输出 <code>pdf</code> 文档.<br>上述这种方式默认使用本地的 <code>Latex</code> 进行编译(<font color="red">调用 latexmk 编译</font>), 不过需要满足一些前提条件:</p>
+<ul>
+<li><code>Documenter</code> 可以调用 <code>pdflatex</code> 和 <code>latexmk</code>(命令行可使用)</li>
+<li>Latex 包 <code>minted</code> 已安装并且其后端 <code>Pygments</code> 已安装</li>
+<li><code>DejaVu Sans</code> 和 <code>DejaVu Sans Mono</code> 字体已安装<br>不过这种方式并不支持中文文档编译, 所以若包含中文注释不建议使用该方式.</li>
+</ul>
+<h4 id="输出-Tex-文件"><a href="#输出-Tex-文件" class="headerlink" title="输出 Tex 文件"></a>输出 Tex 文件</h4><p>推荐仅将文档编译成 <code>.tex</code> 文件, 跳过编译成 <code>pdf</code> 步骤. 这样我们可以根据自己的需求, 在生成的 <code>build/custom.sty</code> 文件中, 根据自己的风格修改文档输出风格. 通过如下命令实现</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> Documenter</span><br><span class="line">makedocs(</span><br><span class="line">    format = Documenter.Latex(platform = <span class="string">&quot;none&quot;</span>),</span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>到此, 关于 <code>Documenter.jl</code> 的基本使用就到这里. 更详细的介绍可参见 <a href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a></p>
+]]></content>
+      <categories>
+        <category>Julia</category>
+      </categories>
+      <tags>
+        <tag>Julia</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 JuMP 并配置 Julia 环境</title>
+    <url>/2022/04/01/use-JuMP/</url>
+    <content><![CDATA[<h1 id="配置-Julia-环境"><a href="#配置-Julia-环境" class="headerlink" title="配置 Julia 环境"></a>配置 Julia 环境</h1><h2 id="配置镜像（可选）"><a href="#配置镜像（可选）" class="headerlink" title="配置镜像（可选）"></a>配置镜像（可选）</h2><p>如果 Julia 下载依赖包的速度比较慢, 可以在 <code>.bashrc</code> 文件中输入</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">export</span> JULIA_PKG_SERVER=<span class="string">&quot;https://mirrors.tuna.tsinghua.edu.cn/julia&quot;</span></span><br></pre></td></tr></table></figure>
+<p>然后在终端中执行 <code>source ~/.bashrc</code> 即可. 此时 Julia 的依赖包的源位置已经改为清华的镜像源, 也可以使用其他的镜像地址:</p>
+<ul>
+<li>北外开源镜像站: <code>https://mirrors.bfsu.edu.cn/julia</code></li>
+<li>清华开源镜像站: <code>https://mirrors.tuna.tsinghua.edu.cn/julia</code></li>
+<li>上交: <code>https://mirrors.sjtug.sjtu.edu.cn/julia</code></li>
+<li>中科大: <code>https://mirrors.ustc.edu.cn/julia</code></li>
+<li>南方科大: <code>https://mirrors.sustech.edu.cn/julia</code></li>
+<li>南京大学: <code>https://mirrors.nju.edu.cn/julia</code></li>
+</ul>
+<h2 id="如何下载包"><a href="#如何下载包" class="headerlink" title="如何下载包"></a>如何下载包</h2><p>首先打开 Julia 交互式环境安装包</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> Pkg</span><br><span class="line">Pkg.add(<span class="string">&quot;Packagename&quot;</span>)</span><br><span class="line"><span class="comment"># 一次安装多个包</span></span><br><span class="line">Pkg.add([<span class="string">&quot;name1&quot;</span>, <span class="string">&quot;name2&quot;</span>, <span class="string">&quot;name3&quot;</span>, ...])</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">julia&gt;  <span class="comment"># 键入 ], 然后出现如下界面</span></span><br><span class="line">(<span class="meta">@version</span>-num) pkg&gt;add Packagename</span><br></pre></td></tr></table></figure>
+<p>以上两种方式都可以安装包</p>
+<p>关于安装包更详细的教程可以查阅官方文档关于 <a href="https://docs.juliacn.com/latest/stdlib/Pkg/">Pkg</a> 的描述</p>
+<h2 id="安装-SCIP-jl"><a href="#安装-SCIP-jl" class="headerlink" title="安装 SCIP.jl"></a>安装 SCIP.jl</h2><p>在 Julia 中调用 SCIP 可以通过直接安装 <code>SCIP.jl</code> 提供 SCIP 的接口支持, 在交互式环境中键入如下命令</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">&gt;Pkg.add(<span class="string">&quot;SCIP&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>如果已经在本地安装过 SCIP, 并且有已经将 SCIP 的安装目录加入到系统环境中, 即</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SCIPOPTDIR = /scipdir <span class="comment"># scip 的安装目录</span></span><br></pre></td></tr></table></figure>
+<p>那么在调用 SCIP 是默认使用本地的 SCIP. 不过你也可以不必在本地安装 SCIP. 使用 <code>SCIP.jl</code> 提供的 SCIP 动态库 <code>SCIP_jll.jl</code>, 该动态库支持绝大多数芯片架构, 但是不支持 Apple <font color="red">M系列芯片</font>😭. (好像 SICP 暂时也不支持 M系列芯片)</p>
+<p>使用 <code>SCIP_jll</code> 动态库的好处是, 你可以使用不同版本的 SCIP 去处理问题. 比如</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">pkg&gt; add SCIP_jll<span class="meta">@v0</span><span class="number">.2</span><span class="number">.0</span>  <span class="comment"># 或者</span></span><br><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(name=<span class="string">&quot;SCIP_jll&quot;</span>, version=<span class="string">&quot;0.2.0&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>关于 <code>SCIP_jll</code> 的更详细的介绍可以访问 <a href="https://juliapackages.com/p/scip">SCIP.jl</a> 以及 <a href="https://github.com/JuliaBinaryWrappers/SCIP_jll.jl">SCIP_jll.jl</a></p>
+<p>在调用 SCIP 时你可能会遇到一些问题, 如即使你已经在本地安装 <code>bliss</code> 但是通过 Julia 调用 SCIP 时, 仍然不支持 <code>bliss</code> 的功能. 这可能是因为 Julia 中安装的 <code>bliss_jll</code> 的版本不正确, 可通过下面命令解决该问题</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">pkg&gt; add bliss_jll<span class="meta">@v0</span><span class="number">.73</span> <span class="comment"># 默认下载的可能是 0.77 版本</span></span><br></pre></td></tr></table></figure>
+<h2 id="安装-CPLEX-jl"><a href="#安装-CPLEX-jl" class="headerlink" title="安装 CPLEX.jl"></a>安装 CPLEX.jl</h2><p>通过如下方式安装 <code>CPLEX.jl</code> </p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="literal">ENV</span>[<span class="string">&quot;CPLEX_STUDIO_BINARIES&quot;</span>] = <span class="string">&quot;/opt/CPLEX_Studio1210/cplex/bin/x86-64_linux/&quot;</span></span><br><span class="line"><span class="keyword">import</span> Pkg</span><br><span class="line">Pkg.add(<span class="string">&quot;CPLEX&quot;</span>)</span><br><span class="line">Pkg.build(<span class="string">&quot;CPLEX&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>其中 <code>ENV[...]=&quot;somepath&quot;</code> 的 <code>somepath</code> 是你本地安装 <code>Cplex</code> 的可执行文件的绝对路径</p>
+<p>目前 <code>CPLEX.jl</code> 要求的 <code>CPLEX</code> 版本是 <code>12.10</code> 或 <code>20.1</code>, 更多细节可以访问 <a href="https://github.com/jump-dev/CPLEX.jl">CPELX.jl</a></p>
+<h2 id="安装-JuMP"><a href="#安装-JuMP" class="headerlink" title="安装 JuMP"></a>安装 JuMP</h2><p>直接在交互式环境中输入</p>
+<figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(<span class="string">&quot;JuMP&quot;</span>)</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>MIP</category>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>Julia</tag>
+        <tag>JuMP</tag>
+      </tags>
+  </entry>
+</search>

@@ -14,10 +14,12 @@
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":"mac","style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta property="og:type" content="website">
@@ -72,6 +74,13 @@
   </style>
 </noscript>
 
+  
+  
+    <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+    <script src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+    <script src="/js/cursor/explosion.min.js"></script>
+  
+
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
@@ -99,6 +108,7 @@
 
   <div class="site-nav-right">
     <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
 </div>
@@ -111,6 +121,11 @@
         <li class="menu-item menu-item-home">
 
     <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -128,30 +143,49 @@
     <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">3</span></a>
 
   </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a>
-
-  </li>
         <li class="menu-item menu-item-schedule">
 
     <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
 
   </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
   </ul>
 </nav>
 
 
 
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
 
 </div>
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+  <div class="reading-progress-bar"></div>
 
 
     <main class="main">
@@ -188,10 +222,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-06-12 16:23:37 / 修改时间：23:30:39" itemprop="dateCreated datePublished" datetime="2022-06-12T16:23:37+08:00">2022-06-12</time>
+              <time title="创建时间：2022-06-12 16:23:37" itemprop="dateCreated datePublished" datetime="2022-06-12T16:23:37+08:00">2022-06-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-13 15:56:03" itemprop="dateModified" datetime="2022-06-13T15:56:03+08:00">2022-06-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -202,7 +242,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -215,62 +269,21 @@
       
           <p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
 <h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a target="_blank" rel="noopener" href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.</p>
-<p>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
-<p><code>Doxygen</code> 就是比较出名的文档生成工具, 而且是开源的. 它的使用非常方便, 能提取 <code>C++</code>, <code>Java</code>, <code>Python</code>, <code>IDL</code>, <code>PHP</code>, <code>C#</code>, <code>Objective-C</code> 等语言的注释, 从而生成相应的文档. 对于 <code>Doxygen</code> 不支持的语言可能需要编写扩展以提供相应的支持.</p>
-<h2 id="Documenter-jl"><a href="#Documenter-jl" class="headerlink" title="Documenter.jl"></a>Documenter.jl</h2><p>对于 Julia, 我们可以使用其提供的文档生成工具 <a target="_blank" rel="noopener" href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a> 进行代码文档生成. <code>Documenter</code> 通过结合 <code>Markdown</code> 文件和 <code>Julia</code> 的文档系统来生成代码文档.</p>
-<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>在 <font color="blue">Julia REPL</font> 下执行如下命令:</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">julia&gt; <span class="comment"># 键入 ]</span></span><br><span class="line">pkg&gt; add Documenter</span><br></pre></td></tr></table></figure>
-<h3 id="调整文件结构"><a href="#调整文件结构" class="headerlink" title="调整文件结构"></a>调整文件结构</h3><p>假设我们需要为 <code>Example.jl</code> 生成代码文档, 它的文档结构如下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Example/</span><br><span class="line">|--- src/</span><br><span class="line">|    |--- Example.jl</span><br><span class="line">... # 其他不重要的文件</span><br></pre></td></tr></table></figure>
-<p>我们必须决定一个生成文档的位置, 推荐使用 <code>docs/</code> 文件夹, 结构如下:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Example/</span><br><span class="line">|--- docs/</span><br><span class="line">|     |--- ...</span><br><span class="line">|--- src/</span><br><span class="line">|     |--- Example.jl</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>在 <code>docs/</code> 文件夹下我们需要添加两个东西</p>
-<ul>
-<li>包含 Markdown 文件的文件夹 (其中的文件被用来构建文档)</li>
-<li>一个用于控制构建文档的 Julia 脚本</li>
-</ul>
-<p>推荐使用如下命名</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docs/</span><br><span class="line">|--- src/</span><br><span class="line">|--- make.jl</span><br></pre></td></tr></table></figure>
-<h3 id="构建一个空文档"><a href="#构建一个空文档" class="headerlink" title="构建一个空文档"></a>构建一个空文档</h3><p>首先我们来构建一个空的文档, 在 <code>make.jl</code> 文件中添加如下代码</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">push!(<span class="literal">LOAD_PATH</span>, <span class="string">&quot;../src/&quot;</span>)</span><br><span class="line"><span class="keyword">using</span> Documenter, Example</span><br><span class="line"></span><br><span class="line">makedocs(sitename=<span class="string">&quot;My Documentation&quot;</span>)</span><br></pre></td></tr></table></figure>
-<p><code>push!(LOAD_PATH, &quot;../src/&quot;)</code> 是为了保证 <code>Example.jl</code> 能够被 Julia 找到(<font color="red">要确保你需要生成的代码文件包能被 Julia 找到</font>).<br>然后在 <code>docs/src/</code> 目录下添加一个 <code>index.md</code> 文件, 接着在 <code>docs/</code> 目录下运行 <code>make.jl</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">julia make.jl</span><br></pre></td></tr></table></figure>
-<p>然后你就会看到类似如下的输出</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[ Info: SetupBuildDirectory: setting up build directory.</span><br><span class="line">[ Info: Doctest: running doctests.</span><br><span class="line">[ Info: ExpandTemplates: expanding markdown templates.</span><br><span class="line">[ Info: CrossReferences: building cross-references.</span><br><span class="line">[ Info: CheckDocument: running document checks.</span><br><span class="line">[ Info: Populate: populating indices.</span><br><span class="line">[ Info: RenderDocument: rendering document.</span><br><span class="line">[ Info: HTMLWriter: rendering HTML pages.</span><br></pre></td></tr></table></figure>
-<p>此时, <code>docs/</code> 目录下会生成一个新的文件夹 <code>build/</code>, 其结构如下:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">build/</span><br><span class="line">├── assets</span><br><span class="line">│   ├── documenter.js</span><br><span class="line">│   ├── search.js</span><br><span class="line">│   ├── themes</span><br><span class="line">│   │   ├── documenter-dark.css</span><br><span class="line">│   │   └── documenter-light.css</span><br><span class="line">│   ├── themeswap.js</span><br><span class="line">│   └── warner.js</span><br><span class="line">├── index.html</span><br><span class="line">├── search</span><br><span class="line">│   └── index.html</span><br><span class="line">└── search_index.js</span><br></pre></td></tr></table></figure>
-<p>此时点击 <code>index.html</code> 就会看到一个空白的网页.</p>
-<h3 id="添加注释"><a href="#添加注释" class="headerlink" title="添加注释"></a>添加注释</h3><p>接下来我们把在 <code>Example</code> 模块里面定义的 <code>docstring</code> 添加在 <code>index.md</code> 文件中. 首先我们来看一下 <code>Example.jl</code> 中的内容</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> Example</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> func</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    func(x)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Returns double the number `x` plus `1`.</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">func(x) = <span class="number">2</span>x + <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-<p>然后在 <code>index.md</code> 文件中添加</p>
-<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># Example.jl Documentation</span></span><br><span class="line"></span><br><span class="line"><span class="code">```@docs</span></span><br><span class="line"><span class="code">func(x)</span></span><br><span class="line"><span class="code">```</span></span><br></pre></td></tr></table></figure>
-<p>再次运行 <code>make.jl</code> , 打开 <code>index.html</code> 就可以看见新添加入 <code>index.md</code> 的代码注释.</p>
-<blockquote>
-<p>如果需要添加多个注释对象, 使用多个 <code>@docs</code> 块即可.</p>
-</blockquote>
-<h3 id="结构化文件"><a href="#结构化文件" class="headerlink" title="结构化文件"></a>结构化文件</h3><p>有时一个 <code>Package</code> 包含多个文件, 每个文件可能代表不同的功能. 此时, 我们不能将所有的注释都写入一个 Markdown 文件中, 这样会使文件比较臃肿, 不够结构化. 因此, 我们需要使用多个 Markdown 文件将代码注释分开. 在生成文档时就会出现处理不同文件之间关系的问题, 如:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docs/</span><br><span class="line">|--- src/</span><br><span class="line">|    |--- index.md</span><br><span class="line">|    |--- guide.md</span><br><span class="line">|    |--- examples.md</span><br><span class="line">|    |--- ref.md</span><br><span class="line">|--- make.jl</span><br></pre></td></tr></table></figure>
-<p>此时我们可以在 <code>make.jl</code> 文件中添加</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">_pages = [</span><br><span class="line">    <span class="string">&quot;Example.jl&quot;</span> =&gt; [</span><br><span class="line">        <span class="string">&quot;home&quot;</span> =&gt; <span class="string">&quot;index.md&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Manual&quot;</span> =&gt; [</span><br><span class="line">            <span class="string">&quot;Guide&quot;</span> =&gt; <span class="string">&quot;guide.md&quot;</span>,</span><br><span class="line">            <span class="string">&quot;Examples&quot;</span> =&gt; <span class="string">&quot;examples.md&quot;</span>,</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&quot;Reference&quot;</span> =&gt; <span class="string">&quot;ref.md&quot;</span>,</span><br><span class="line">    ]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-<p>这样就可以在生成网页时显示出我们期待的文档结构.</p>
-<h3 id="其他输出形式"><a href="#其他输出形式" class="headerlink" title="其他输出形式"></a>其他输出形式</h3><p>如果我们不想要 <code>html</code> 形式的代码文档, 我们也可以生成 <code>pdf</code> 形式的文档. 通过借助 <code>latex</code> 使获取 <code>pdf</code> 形式的文档变得简单.<br>使用如下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">using Documenter</span><br><span class="line">makedocs(format = Documenter.Latex(), ...)</span><br></pre></td></tr></table></figure>
-<p>可以选择通过调用 <code>Latex</code> 输出 <code>pdf</code> 文档.<br>上述这种方式默认使用本地的 <code>Latex</code> 进行编译(<font color="red">调用 latexmk 编译</font>), 不过需要满足一些前提条件:</p>
-<ul>
-<li><code>Documenter</code> 可以调用 <code>pdflatex</code> 和 <code>latexmk</code>(命令行可使用)</li>
-<li>Latex 包 <code>minted</code> 已安装并且其后端 <code>Pygments</code> 已安装</li>
-<li><code>DejaVu Sans</code> 和 <code>DejaVu Sans Mono</code> 字体已安装<br>不过这种方式并不支持中文文档编译, 所以若包含中文注释不建议使用该方式.</li>
-</ul>
-<h4 id="输出-Tex-文件"><a href="#输出-Tex-文件" class="headerlink" title="输出 Tex 文件"></a>输出 Tex 文件</h4><p>推荐仅将文档编译成 <code>.tex</code> 文件, 跳过编译成 <code>pdf</code> 步骤. 这样我们可以根据自己的需求, 在生成的 <code>build/custom.sty</code> 文件中, 根据自己的风格修改文档输出风格. 通过如下命令实现</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Documenter</span><br><span class="line">makedocs(</span><br><span class="line">    format = Documenter.Latex(platform = <span class="string">&quot;none&quot;</span>),</span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>到此, 关于 <code>Documenter.jl</code> 的基本使用就到这里. 更详细的介绍可参见 <a target="_blank" rel="noopener" href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/06/12/codeDocs/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
     
     
+    
+
     
       <footer class="post-footer">
         <div class="post-eof"></div>
@@ -331,7 +344,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -356,6 +383,8 @@
 
     
     
+    
+
     
       <footer class="post-footer">
         <div class="post-eof"></div>
@@ -461,6 +490,10 @@
 
 
       </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
 
     </div>
   </aside>
@@ -484,9 +517,31 @@
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">Yu-Chengyang</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">5k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4 分钟</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
-  </div>
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共2.1k字</span>
+<!--
+ <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+-->
 
         
 
@@ -511,7 +566,7 @@
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/muse.js"></script>
+<script src="/js/schemes/pisces.js"></script>
 
 
 <script src="/js/next-boot.js"></script>
@@ -522,6 +577,10 @@
   
 
 
+
+
+  
+<script src="/js/local-search.js"></script>
 
 
 
