@@ -91,6 +91,31 @@
 <p>那么在调用 SCIP 是默认使用本地的 SCIP. 不过你也可以不必在本地安装 SCIP. 使用 <code>SCIP.jl</code> 提供的 SCIP 动态库 <code>SCIP_jll.jl</code>, 该动态库支持绝大多数芯片架构, 但是不支持 Apple <font color="red">M系列芯片</font>😭. (好像 SICP 暂时也不支持 M系列芯片)</p>
 <p>使用 <code>SCIP_jll</code> 动态库的好处是, 你可以使用不同版本的 SCIP 去处理问题. 比如</p>
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">pkg&gt; add SCIP_jll<span class="meta">@v0</span><span class="number">.2</span><span class="number">.0</span>  <span class="comment"># 或者</span></span><br><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(name=<span class="string">&quot;SCIP_jll&quot;</span>, version=<span class="string">&quot;0.2.0&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>下表给出部分版本对应信息</p>
+<table>
+<thead>
+<tr>
+<th align="left">SCIP_jll.jl 版本</th>
+<th align="left">scipoptsuite 对应版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">v0.2.1</td>
+<td align="left">scipoptsuite-8.0.0</td>
+</tr>
+<tr>
+<td align="left">v0.1.3</td>
+<td align="left">scipoptsuite-7.0.3</td>
+</tr>
+<tr>
+<td align="left">v0.1.2</td>
+<td align="left">scipoptsuite-7.0.2</td>
+</tr>
+<tr>
+<td align="left">v0.1.2+0</td>
+<td align="left">scipoptsuite-7.0.1</td>
+</tr>
+</tbody></table>
 <p>关于 <code>SCIP_jll</code> 的更详细的介绍可以访问 <a href="https://juliapackages.com/p/scip">SCIP.jl</a> 以及 <a href="https://github.com/JuliaBinaryWrappers/SCIP_jll.jl">SCIP_jll.jl</a></p>
 <p>在调用 SCIP 时你可能会遇到一些问题, 如即使你已经在本地安装 <code>bliss</code> 但是通过 Julia 调用 SCIP 时, 仍然不支持 <code>bliss</code> 的功能. 这可能是因为 Julia 中安装的 <code>bliss_jll</code> 的版本不正确, 可通过下面命令解决该问题</p>
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">pkg&gt; add bliss_jll<span class="meta">@v0</span><span class="number">.73</span> <span class="comment"># 默认下载的可能是 0.77 版本</span></span><br></pre></td></tr></table></figure>
