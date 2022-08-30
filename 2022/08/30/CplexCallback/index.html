@@ -22,21 +22,22 @@
     var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="配置 Julia 调用求解器以及建模的使用环境">
+  <meta name="description" content="关于 Cplex 中 Callback 的两种不同实现">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用 JuMP 并配置 Julia 环境">
-<meta property="og:url" content="https://learneryu3.github.io/2022/04/01/use-JuMP/index.html">
+<meta property="og:title" content="Cplex Callback 的两种方式">
+<meta property="og:url" content="https://learneryu3.github.io/2022/08/30/CplexCallback/index.html">
 <meta property="og:site_name" content="My Blog">
-<meta property="og:description" content="配置 Julia 调用求解器以及建模的使用环境">
+<meta property="og:description" content="关于 Cplex 中 Callback 的两种不同实现">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-03-31T16:26:14.000Z">
-<meta property="article:modified_time" content="2022-06-16T08:48:58.503Z">
+<meta property="article:published_time" content="2022-08-30T12:10:02.000Z">
+<meta property="article:modified_time" content="2022-08-30T14:15:16.992Z">
 <meta property="article:author" content="Yu-Chengyang">
 <meta property="article:tag" content="Julia">
 <meta property="article:tag" content="JuMP">
+<meta property="article:tag" content="Cplex">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://learneryu3.github.io/2022/04/01/use-JuMP/">
+<link rel="canonical" href="https://learneryu3.github.io/2022/08/30/CplexCallback/">
 
 
 <script id="page-configurations">
@@ -49,7 +50,7 @@
   };
 </script>
 
-  <title>使用 JuMP 并配置 Julia 环境 | My Blog</title>
+  <title>Cplex Callback 的两种方式 | My Blog</title>
   
 
 
@@ -206,7 +207,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://learneryu3.github.io/2022/04/01/use-JuMP/">
+    <link itemprop="mainEntityOfPage" href="https://learneryu3.github.io/2022/08/30/CplexCallback/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +220,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          使用 JuMP 并配置 Julia 环境
+          Cplex Callback 的两种方式
         </h1>
 
         <div class="post-meta">
@@ -228,16 +229,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2022-04-01 00:26:14" itemprop="dateCreated datePublished" datetime="2022-04-01T00:26:14+08:00">2022-04-01</time>
+              <time title="创建时间：2022-08-30 20:10:02 / 修改时间：22:15:16" itemprop="dateCreated datePublished" datetime="2022-08-30T20:10:02+08:00">2022-08-30</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-16 16:48:58" itemprop="dateModified" datetime="2022-06-16T16:48:58+08:00">2022-06-16</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -258,16 +253,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
+              <span>2.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
-            <div class="post-description">配置 Julia 调用求解器以及建模的使用环境</div>
+            <div class="post-description">关于 Cplex 中 Callback 的两种不同实现</div>
 
         </div>
       </header>
@@ -278,64 +273,58 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="配置-Julia-环境"><a href="#配置-Julia-环境" class="headerlink" title="配置 Julia 环境"></a>配置 Julia 环境</h1><h2 id="配置镜像（可选）"><a href="#配置镜像（可选）" class="headerlink" title="配置镜像（可选）"></a>配置镜像（可选）</h2><p>如果 Julia 下载依赖包的速度比较慢, 可以在 <code>.bashrc</code> 文件中输入</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> JULIA_PKG_SERVER=<span class="string">&quot;https://mirrors.tuna.tsinghua.edu.cn/julia&quot;</span></span><br></pre></td></tr></table></figure>
-<p>然后在终端中执行 <code>source ~/.bashrc</code> 即可. 此时 Julia 的依赖包的源位置已经改为清华的镜像源, 也可以使用其他的镜像地址:</p>
+        <p>在 <code>Cplex</code> 中存在两种 <code>Callback</code> 方式, 一种是特定的 <code>Callback</code> 调用, 一种则是通用的 <code>Callback</code> 调用. 即</p>
 <ul>
-<li>北外开源镜像站: <code>https://mirrors.bfsu.edu.cn/julia</code></li>
-<li>清华开源镜像站: <code>https://mirrors.tuna.tsinghua.edu.cn/julia</code></li>
-<li>上交: <code>https://mirrors.sjtug.sjtu.edu.cn/julia</code></li>
-<li>中科大: <code>https://mirrors.ustc.edu.cn/julia</code></li>
-<li>南方科大: <code>https://mirrors.sustech.edu.cn/julia</code></li>
-<li>南京大学: <code>https://mirrors.nju.edu.cn/julia</code></li>
+<li><code>lazyconstraint</code>, <code>usercut</code>, <code>heuristic</code>, <code>branch</code></li>
+<li><code>general callback</code><br>其中特定的 <code>Callback</code> 之间彼此是相互独立的, 其不同的回调对应着不同的 <code>wherefrom</code> 值</li>
 </ul>
-<h2 id="如何下载包"><a href="#如何下载包" class="headerlink" title="如何下载包"></a>如何下载包</h2><p>首先打开 Julia 交互式环境安装包</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Pkg</span><br><span class="line">Pkg.add(<span class="string">&quot;Packagename&quot;</span>)</span><br><span class="line"><span class="comment"># 一次安装多个包</span></span><br><span class="line">Pkg.add([<span class="string">&quot;name1&quot;</span>, <span class="string">&quot;name2&quot;</span>, <span class="string">&quot;name3&quot;</span>, ...])</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">julia&gt;  <span class="comment"># 键入 ], 然后出现如下界面</span></span><br><span class="line">(<span class="meta">@version</span>-num) pkg&gt;add Packagename</span><br></pre></td></tr></table></figure>
-<p>以上两种方式都可以安装包</p>
-<p>关于安装包更详细的教程可以查阅官方文档关于 <a target="_blank" rel="noopener" href="https://docs.juliacn.com/latest/stdlib/Pkg/">Pkg</a> 的描述</p>
-<h2 id="安装-SCIP-jl"><a href="#安装-SCIP-jl" class="headerlink" title="安装 SCIP.jl"></a>安装 SCIP.jl</h2><p>在 Julia 中调用 SCIP 可以通过直接安装 <code>SCIP.jl</code> 提供 SCIP 的接口支持, 在交互式环境中键入如下命令</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">&gt;Pkg.add(<span class="string">&quot;SCIP&quot;</span>)</span><br></pre></td></tr></table></figure>
-<p>如果已经在本地安装过 SCIP, 并且有已经将 SCIP 的安装目录加入到系统环境中, 即</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SCIPOPTDIR = /scipdir <span class="comment"># scip 的安装目录</span></span><br></pre></td></tr></table></figure>
-<p>那么在调用 SCIP 是默认使用本地的 SCIP. 不过你也可以不必在本地安装 SCIP. 使用 <code>SCIP.jl</code> 提供的 SCIP 动态库 <code>SCIP_jll.jl</code>, 该动态库支持绝大多数芯片架构, 但是不支持 Apple <font color="red">M系列芯片</font>😭. (好像 SICP 暂时也不支持 M系列芯片)</p>
-<p>使用 <code>SCIP_jll</code> 动态库的好处是, 你可以使用不同版本的 SCIP 去处理问题. 比如</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pkg&gt; add SCIP_jll<span class="meta">@v0</span><span class="number">.2</span><span class="number">.1</span>  <span class="comment"># 或者</span></span><br><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(name=<span class="string">&quot;SCIP_jll&quot;</span>, version=<span class="string">&quot;0.2.1&quot;</span>)</span><br></pre></td></tr></table></figure>
-<p>下表给出部分版本对应信息</p>
 <table>
 <thead>
 <tr>
-<th align="left">SCIP_jll.jl 版本</th>
-<th align="left">scipoptsuite 对应版本</th>
+<th align="left"><code>Callback</code></th>
+<th align="left"><code>wherefrom</code></th>
 </tr>
 </thead>
 <tbody><tr>
-<td align="left">v0.2.1</td>
-<td align="left">scipoptsuite-8.0.0</td>
+<td align="left"><code>lazyconstraint</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_FEAS</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_UNBD    </code></td>
 </tr>
 <tr>
-<td align="left">v0.1.3</td>
-<td align="left">scipoptsuite-7.0.3</td>
+<td align="left"><code>usercut</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_LOOP</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_LAST</code></td>
 </tr>
 <tr>
-<td align="left">v0.1.2</td>
-<td align="left">scipoptsuite-7.0.2</td>
+<td align="left"><code>heuristic</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_HEURISTIC</code></td>
 </tr>
 <tr>
-<td align="left">v0.1.2+0</td>
-<td align="left">scipoptsuite-7.0.1</td>
+<td align="left"><code>branch</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_BRANCH</code></td>
 </tr>
 </tbody></table>
-<p>关于 <code>SCIP_jll</code> 的更详细的介绍可以访问 <a target="_blank" rel="noopener" href="https://juliapackages.com/p/scip">SCIP.jl</a> 以及 <a target="_blank" rel="noopener" href="https://github.com/JuliaBinaryWrappers/SCIP_jll.jl">SCIP_jll.jl</a></p>
-<p>在调用 SCIP 时你可能会遇到一些问题, 如即使你已经在本地安装 <code>bliss</code> 但是通过 Julia 调用 SCIP 时, 仍然不支持 <code>bliss</code> 的功能. 这可能是因为 Julia 中安装的 <code>bliss_jll</code> 的版本不正确, 可通过下面命令解决该问题</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pkg&gt; add bliss_jll<span class="meta">@v0</span><span class="number">.73</span> <span class="comment"># 默认下载的可能是 0.77 版本</span></span><br></pre></td></tr></table></figure>
-<h2 id="安装-CPLEX-jl"><a href="#安装-CPLEX-jl" class="headerlink" title="安装 CPLEX.jl"></a>安装 CPLEX.jl</h2><p>通过如下方式安装 <code>CPLEX.jl</code> </p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">ENV</span>[<span class="string">&quot;CPLEX_STUDIO_BINARIES&quot;</span>] = <span class="string">&quot;/opt/CPLEX_Studio1210/cplex/bin/x86-64_linux/&quot;</span></span><br><span class="line"><span class="keyword">import</span> Pkg</span><br><span class="line">Pkg.add(<span class="string">&quot;CPLEX&quot;</span>)</span><br><span class="line">Pkg.build(<span class="string">&quot;CPLEX&quot;</span>)</span><br></pre></td></tr></table></figure>
-<p>其中 <code>ENV[...]=&quot;somepath&quot;</code> 的 <code>somepath</code> 是你本地安装 <code>Cplex</code> 的可执行文件的绝对路径</p>
-<p>目前 <code>CPLEX.jl</code> 要求的 <code>CPLEX</code> 版本是 <code>12.10</code> 或 <code>20.1</code>, 更多细节可以访问 <a target="_blank" rel="noopener" href="https://github.com/jump-dev/CPLEX.jl">CPELX.jl</a></p>
-<h2 id="安装-JuMP"><a href="#安装-JuMP" class="headerlink" title="安装 JuMP"></a>安装 JuMP</h2><p>直接在交互式环境中输入</p>
-<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(<span class="string">&quot;JuMP&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>而通用的 <code>Callback</code> 则是一种连贯的调用方式, 即在一个回调函数中根据不同的上下文信息 (context) 判断所处的求解阶段, 从而进行不同的处理, 这种回调方式依赖于 <code>context</code>, 其取值包括</p>
+<ul>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_UP</code></li>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_DOWN</code></li>
+<li><code>CPX_CALLBACKCONTEXT_CANDIDATE</code></li>
+<li><code>CPX_CALLBACKCONTEXT_LOCAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_GLOBAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_RELAXATION</code></li>
+<li><code>CPX_CALLBACKCONTEXT_BRANCHING</code></li>
+</ul>
+<p>显然, 后者或许是一种更方便且通用的回调方式. 比如, 当我们想要实现 <code>lazyconstraint</code> 和 <code>branch</code> 这两种回调, 依赖 <code>wherefrom</code> 我们需要编写两种回调函数. 而依赖于 <code>context</code> 实现回调时, 我们仅需编写一个通用的回调函数. 关于 <code>Benders Decomposition</code> 的两种实现方式可以参考 <code>Cplex</code> 下 <code>cplex/example/src/c</code> 文件夹下 <code>bendersatsp1.c\bendersatsp2.c</code></p>
+<h2 id="Julia-中-Cplex-jl-实现的-Callback-方式"><a href="#Julia-中-Cplex-jl-实现的-Callback-方式" class="headerlink" title="Julia 中 Cplex.jl 实现的 Callback 方式"></a>Julia 中 Cplex.jl 实现的 Callback 方式</h2><p>在 <code>Julia</code> 中 <code>Cplex</code> 接口已经放弃了依赖于 <code>wherefrom</code> 的方式, 而是保留了依赖于 <code>context</code> 的回调方式. 不过 <code>Cplex.jl</code> 也提供了自己的特定 <code>Callback</code> 接口</p>
+<ul>
+<li><code>lazyconstraint</code></li>
+<li><code>usercut</code></li>
+<li><code>heuristic</code></li>
+</ul>
+<p>这里以 <code>Benders Decomposition</code> 为例, 给出两种实现方式以观察两种实现方式的区别</p>
+<h3 id="特定-Callback"><a href="#特定-Callback" class="headerlink" title="特定 Callback"></a>特定 <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> LazyCons(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> UserCut(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.LazyConstraintCallback(), LazyCons)</span><br><span class="line">MOI.set(model, MOI.UserCutCallback(), UserCut)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+
+<h3 id="General-Callback"><a href="#General-Callback" class="headerlink" title="General Callback"></a>General <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> callback_function(cb_data::CPLEX.CallbackContext, context_id::<span class="built_in">Clong</span>)</span><br><span class="line">    <span class="keyword">if</span> context_id == CPX_CALLBACKCONTEXT_CANDIDATE</span><br><span class="line">        stat = CPXcallbackcandidateispoint(cb_data, ispoint_p)</span><br><span class="line">        <span class="meta">@assert</span> stat == <span class="number">0</span> <span class="string">&quot;get candidate failed&quot;</span></span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">elseif</span> context_id == CPX_CALLBACKCONTEXT_RELAXATION</span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, CPLEX.CallbackFunction(), callback_function)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+<p>更多具体细节可以参考 <a target="_blank" rel="noopener" href="https://github.com/jump-dev/CPLEX.jl">CPLEX.jl</a></p>
+
     </div>
 
     
@@ -354,6 +343,7 @@
           <div class="post-tags">
               <a href="/tags/Julia/" rel="tag"># Julia</a>
               <a href="/tags/JuMP/" rel="tag"># JuMP</a>
+              <a href="/tags/Cplex/" rel="tag"># Cplex</a>
           </div>
 
         
@@ -361,11 +351,11 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2022/06/12/codeDocs/" rel="prev" title="使用 Documneter.jl 生成代码文档">
-      <i class="fa fa-chevron-left"></i> 使用 Documneter.jl 生成代码文档
-    </a></div>
       <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/12/codeDocs/" rel="next" title="使用 Documneter.jl 生成代码文档">
+      使用 Documneter.jl 生成代码文档 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -424,7 +414,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-Julia-%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">配置 Julia 环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%95%9C%E5%83%8F%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">配置镜像（可选）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%B8%8B%E8%BD%BD%E5%8C%85"><span class="nav-number">1.2.</span> <span class="nav-text">如何下载包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-SCIP-jl"><span class="nav-number">1.3.</span> <span class="nav-text">安装 SCIP.jl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-CPLEX-jl"><span class="nav-number">1.4.</span> <span class="nav-text">安装 CPLEX.jl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-JuMP"><span class="nav-number">1.5.</span> <span class="nav-text">安装 JuMP</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Julia-%E4%B8%AD-Cplex-jl-%E5%AE%9E%E7%8E%B0%E7%9A%84-Callback-%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">Julia 中 Cplex.jl 实现的 Callback 方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E5%AE%9A-Callback"><span class="nav-number">1.1.</span> <span class="nav-text">特定 Callback</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#General-Callback"><span class="nav-number">1.2.</span> <span class="nav-text">General Callback</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

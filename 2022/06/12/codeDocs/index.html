@@ -22,15 +22,15 @@
     var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用 DoxygenDoxygen 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.">
+  <meta name="description" content="Julia 代码文档的生成方式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用 Documneter.jl 生成代码文档">
 <meta property="og:url" content="https://learneryu3.github.io/2022/06/12/codeDocs/index.html">
 <meta property="og:site_name" content="My Blog">
-<meta property="og:description" content="对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用 DoxygenDoxygen 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.">
+<meta property="og:description" content="Julia 代码文档的生成方式">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-06-12T08:23:37.000Z">
-<meta property="article:modified_time" content="2022-06-13T07:56:03.754Z">
+<meta property="article:modified_time" content="2022-08-30T14:15:12.284Z">
 <meta property="article:author" content="Yu-Chengyang">
 <meta property="article:tag" content="Julia">
 <meta name="twitter:card" content="summary">
@@ -130,7 +130,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">3</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -140,7 +140,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">2</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">3</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -235,7 +235,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-13 15:56:03" itemprop="dateModified" datetime="2022-06-13T15:56:03+08:00">2022-06-13</time>
+                <time title="修改时间：2022-08-30 22:15:12" itemprop="dateModified" datetime="2022-08-30T22:15:12+08:00">2022-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -262,6 +262,7 @@
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
               <span>3 分钟</span>
             </span>
+            <div class="post-description">Julia 代码文档的生成方式</div>
 
         </div>
       </header>
@@ -273,9 +274,7 @@
 
       
         <p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
-<h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a target="_blank" rel="noopener" href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.</p>
-<span id="more"></span>
-<p>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
+<h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a target="_blank" rel="noopener" href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.<br>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
 <p><code>Doxygen</code> 就是比较出名的文档生成工具, 而且是开源的. 它的使用非常方便, 能提取 <code>C++</code>, <code>Java</code>, <code>Python</code>, <code>IDL</code>, <code>PHP</code>, <code>C#</code>, <code>Objective-C</code> 等语言的注释, 从而生成相应的文档. 对于 <code>Doxygen</code> 不支持的语言可能需要编写扩展以提供相应的支持.</p>
 <h2 id="Documenter-jl"><a href="#Documenter-jl" class="headerlink" title="Documenter.jl"></a>Documenter.jl</h2><p>对于 Julia, 我们可以使用其提供的文档生成工具 <a target="_blank" rel="noopener" href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a> 进行代码文档生成. <code>Documenter</code> 通过结合 <code>Markdown</code> 文件和 <code>Julia</code> 的文档系统来生成代码文档.</p>
 <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>在 <font color="blue">Julia REPL</font> 下执行如下命令:</p>
@@ -350,7 +349,10 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/30/CplexCallback/" rel="prev" title="Cplex Callback 的两种方式">
+      <i class="fa fa-chevron-left"></i> Cplex Callback 的两种方式
+    </a></div>
       <div class="post-nav-item">
     <a href="/2022/04/01/use-JuMP/" rel="next" title="使用 JuMP 并配置 Julia 环境">
       使用 JuMP 并配置 Julia 环境 <i class="fa fa-chevron-right"></i>
@@ -427,7 +429,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -440,7 +442,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -488,18 +490,18 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">5k</span>
+    <span title="站点总字数">8k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5 分钟</span>
+    <span title="站点阅读时长">7 分钟</span>
 </div>
 
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共2.1k字</span>
+  <span class="post-count">博客全站共2.7k字</span>
 <!--
  <span class="post-meta-divider">|</span>
   本站总访问量<span id="busuanzi_value_site_pv"></span>次

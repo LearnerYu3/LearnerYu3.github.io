@@ -4,9 +4,7 @@
     <title>使用 Documneter.jl 生成代码文档</title>
     <url>/2022/06/12/codeDocs/</url>
     <content><![CDATA[<p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
-<h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.</p>
-<span id="more"></span>
-<p>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
+<h2 id="Doxygen"><a href="#Doxygen" class="headerlink" title="Doxygen"></a>Doxygen</h2><p><a href="https://www.doxygen.nl/index.html">Doxygen</a> 是一个代码文档生成工具, 可将程序中特定的注释转换成为说明文档. 通常我们在写程序时, 或多或少都会写上注释. 但是对于其他人而言直接探索程序中的注释或许会比较麻烦. 此时, 一个好的代码文档便显得比较重要.<br>在程序中, 大部分有用的注释都是针对函数, 类对象等. 所以如果能够依据程序本身的结构, 将批注经过处理重新整理成为一个纯粹的参考手册, 对于代码的理解将变得更加容易.</p>
 <p><code>Doxygen</code> 就是比较出名的文档生成工具, 而且是开源的. 它的使用非常方便, 能提取 <code>C++</code>, <code>Java</code>, <code>Python</code>, <code>IDL</code>, <code>PHP</code>, <code>C#</code>, <code>Objective-C</code> 等语言的注释, 从而生成相应的文档. 对于 <code>Doxygen</code> 不支持的语言可能需要编写扩展以提供相应的支持.</p>
 <h2 id="Documenter-jl"><a href="#Documenter-jl" class="headerlink" title="Documenter.jl"></a>Documenter.jl</h2><p>对于 Julia, 我们可以使用其提供的文档生成工具 <a href="https://juliadocs.github.io/Documenter.jl/stable/">Documenter.jl</a> 进行代码文档生成. <code>Documenter</code> 通过结合 <code>Markdown</code> 文件和 <code>Julia</code> 的文档系统来生成代码文档.</p>
 <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>在 <font color="blue">Julia REPL</font> 下执行如下命令:</p>
@@ -132,6 +130,71 @@
       <tags>
         <tag>Julia</tag>
         <tag>JuMP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Cplex Callback 的两种方式</title>
+    <url>/2022/08/30/CplexCallback/</url>
+    <content><![CDATA[<p>在 <code>Cplex</code> 中存在两种 <code>Callback</code> 方式, 一种是特定的 <code>Callback</code> 调用, 一种则是通用的 <code>Callback</code> 调用. 即</p>
+<ul>
+<li><code>lazyconstraint</code>, <code>usercut</code>, <code>heuristic</code>, <code>branch</code></li>
+<li><code>general callback</code><br>其中特定的 <code>Callback</code> 之间彼此是相互独立的, 其不同的回调对应着不同的 <code>wherefrom</code> 值</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left"><code>Callback</code></th>
+<th align="left"><code>wherefrom</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>lazyconstraint</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_FEAS</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_UNBD    </code></td>
+</tr>
+<tr>
+<td align="left"><code>usercut</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_LOOP</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_LAST</code></td>
+</tr>
+<tr>
+<td align="left"><code>heuristic</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_HEURISTIC</code></td>
+</tr>
+<tr>
+<td align="left"><code>branch</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_BRANCH</code></td>
+</tr>
+</tbody></table>
+<p>而通用的 <code>Callback</code> 则是一种连贯的调用方式, 即在一个回调函数中根据不同的上下文信息 (context) 判断所处的求解阶段, 从而进行不同的处理, 这种回调方式依赖于 <code>context</code>, 其取值包括</p>
+<ul>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_UP</code></li>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_DOWN</code></li>
+<li><code>CPX_CALLBACKCONTEXT_CANDIDATE</code></li>
+<li><code>CPX_CALLBACKCONTEXT_LOCAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_GLOBAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_RELAXATION</code></li>
+<li><code>CPX_CALLBACKCONTEXT_BRANCHING</code></li>
+</ul>
+<p>显然, 后者或许是一种更方便且通用的回调方式. 比如, 当我们想要实现 <code>lazyconstraint</code> 和 <code>branch</code> 这两种回调, 依赖 <code>wherefrom</code> 我们需要编写两种回调函数. 而依赖于 <code>context</code> 实现回调时, 我们仅需编写一个通用的回调函数. 关于 <code>Benders Decomposition</code> 的两种实现方式可以参考 <code>Cplex</code> 下 <code>cplex/example/src/c</code> 文件夹下 <code>bendersatsp1.c\bendersatsp2.c</code></p>
+<h2 id="Julia-中-Cplex-jl-实现的-Callback-方式"><a href="#Julia-中-Cplex-jl-实现的-Callback-方式" class="headerlink" title="Julia 中 Cplex.jl 实现的 Callback 方式"></a>Julia 中 Cplex.jl 实现的 Callback 方式</h2><p>在 <code>Julia</code> 中 <code>Cplex</code> 接口已经放弃了依赖于 <code>wherefrom</code> 的方式, 而是保留了依赖于 <code>context</code> 的回调方式. 不过 <code>Cplex.jl</code> 也提供了自己的特定 <code>Callback</code> 接口</p>
+<ul>
+<li><code>lazyconstraint</code></li>
+<li><code>usercut</code></li>
+<li><code>heuristic</code></li>
+</ul>
+<p>这里以 <code>Benders Decomposition</code> 为例, 给出两种实现方式以观察两种实现方式的区别</p>
+<h3 id="特定-Callback"><a href="#特定-Callback" class="headerlink" title="特定 Callback"></a>特定 <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> LazyCons(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> UserCut(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.LazyConstraintCallback(), LazyCons)</span><br><span class="line">MOI.set(model, MOI.UserCutCallback(), UserCut)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+
+<h3 id="General-Callback"><a href="#General-Callback" class="headerlink" title="General Callback"></a>General <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> callback_function(cb_data::CPLEX.CallbackContext, context_id::<span class="built_in">Clong</span>)</span><br><span class="line">    <span class="keyword">if</span> context_id == CPX_CALLBACKCONTEXT_CANDIDATE</span><br><span class="line">        stat = CPXcallbackcandidateispoint(cb_data, ispoint_p)</span><br><span class="line">        <span class="meta">@assert</span> stat == <span class="number">0</span> <span class="string">&quot;get candidate failed&quot;</span></span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">elseif</span> context_id == CPX_CALLBACKCONTEXT_RELAXATION</span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, CPLEX.CallbackFunction(), callback_function)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+<p>更多具体细节可以参考 <a href="https://github.com/jump-dev/CPLEX.jl">CPLEX.jl</a></p>
+]]></content>
+      <categories>
+        <category>MIP</category>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>Julia</tag>
+        <tag>JuMP</tag>
+        <tag>Cplex</tag>
       </tags>
   </entry>
 </search>
