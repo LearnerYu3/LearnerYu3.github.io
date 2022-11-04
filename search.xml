@@ -220,6 +220,7 @@
     <content><![CDATA[<h1 id="Cplex-回调函数分类"><a href="#Cplex-回调函数分类" class="headerlink" title="Cplex 回调函数分类"></a>Cplex 回调函数分类</h1><p>在利用 <code>Cplex</code> 求解问题的过程中, 我们可能会或多或少的利用 <code>Cplex</code> 的 <code>Callback</code> 函数来获取我们需要的东西.</p>
 ]]></content>
       <categories>
+        <category>MIP</category>
         <category>Solver</category>
       </categories>
       <tags>
