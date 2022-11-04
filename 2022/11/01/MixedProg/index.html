@@ -22,15 +22,20 @@
     var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="My Blog">
-<meta property="og:url" content="https://learneryu3.github.io/tags/Cplex/index.html">
+  <meta name="description" content="在Julia中调用其它语言, 如 C, C++, Matlab, Python, 以实现混合编程的需要">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Julia中的混合编程">
+<meta property="og:url" content="https://learneryu3.github.io/2022/11/01/MixedProg/index.html">
 <meta property="og:site_name" content="My Blog">
+<meta property="og:description" content="在Julia中调用其它语言, 如 C, C++, Matlab, Python, 以实现混合编程的需要">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-11-01T03:14:50.000Z">
+<meta property="article:modified_time" content="2022-11-01T05:40:32.970Z">
 <meta property="article:author" content="Yu-Chengyang">
+<meta property="article:tag" content="Julia">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://learneryu3.github.io/tags/Cplex/">
+<link rel="canonical" href="https://learneryu3.github.io/2022/11/01/MixedProg/">
 
 
 <script id="page-configurations">
@@ -38,12 +43,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>标签: Cplex | My Blog</title>
+  <title>Julia中的混合编程 | My Blog</title>
   
 
 
@@ -193,71 +198,120 @@
         <div class="content-wrap">
           
 
-          <div class="content tag">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">Cplex
-          <small>标签</small>
-        </h2>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://learneryu3.github.io/2022/11/01/MixedProg/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu-Chengyang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="My Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Julia中的混合编程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-11-01 11:14:50 / 修改时间：13:40:32" itemprop="dateCreated datePublished" datetime="2022-11-01T11:14:50+08:00">2022-11-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Julia/" itemprop="url" rel="index"><span itemprop="name">Julia</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>363</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+            <div class="post-description">在Julia中调用其它语言, 如 C, C++, Matlab, Python, 以实现混合编程的需要</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2022</span>
-    </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-11-01T13:52:05+08:00"
-              content="2022-11-01">
-          11-01
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/11/01/ClassifyCplexCB/" itemprop="url">
-            <span itemprop="name">Cplex 回调函数分类</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-08-30T20:10:02+08:00"
-              content="2022-08-30">
-          08-30
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/08/30/CplexCallback/" itemprop="url">
-            <span itemprop="name">Cplex Callback 的两种方式</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
+        <h1 id="Julia-混合编程"><a href="#Julia-混合编程" class="headerlink" title="Julia 混合编程"></a>Julia 混合编程</h1><h2 id="混合编程的需要"><a href="#混合编程的需要" class="headerlink" title="混合编程的需要"></a>混合编程的需要</h2><p>在数值计算领域, 尽管有很多用其它语言写的高质量且成熟的库都可以用 Julia 重写, 但为了便捷利用现有的代码, 我们可能想要直接调用已有的语言代码.<br>当然这不仅仅发生在数值计算领域, 有时我们可能已经用其他语言完成了部分代码的编写, 但是由于某些原因, 我们可能需要使用 Julia 语言实现一些新的需求. 这些新的需求可能基于我们已有的实现, 此时为了避免重复编写代码, 我们在 Julia 中调用这些已实现的代码. </p>
+<p>Julia 中存在一些可用的库帮助我们做这些事情, 如 <a target="_blank" rel="noopener" href="https://github.com/JuliaInterop/Cxx.jl">Cxx.jl</a>, <a target="_blank" rel="noopener" href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a>, <a target="_blank" rel="noopener" href="https://github.com/JuliaInterop/MATLAB.jl">MATLAB.jl</a>.</p>
+<h2 id="Cxx-jl"><a href="#Cxx-jl" class="headerlink" title="Cxx.jl"></a>Cxx.jl</h2><p>Cxx.jl 帮助我们调用 C++ 代码</p>
+<h2 id="PyCall-jl"><a href="#PyCall-jl" class="headerlink" title="PyCall.jl"></a>PyCall.jl</h2><p>PyCall.jl 帮助我们调用 Python 代码</p>
+<h2 id="MATLAB-jl"><a href="#MATLAB-jl" class="headerlink" title="MATLAB.jl"></a>MATLAB.jl</h2><p>MATLAB.jl 帮助我们调用 Matlab 代码</p>
+<h2 id="调用-C-代码"><a href="#调用-C-代码" class="headerlink" title="调用 C 代码"></a>调用 C 代码</h2><p>C 代码的调用方式</p>
 
     </div>
-  </div>
-  
-  
-  
 
+    
+    
+    
+
+    
+      <div>
+    
+        <div style="text-align:center;color: #000000;font-size:14px;">-------------  😁 本 文 结 束 😚 感 谢 您 的 阅 读 😄  -------------</div>
+    
+</div>
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Julia/" rel="tag"># Julia</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/01/ClassifyCplexCB/" rel="prev" title="Cplex 回调函数分类">
+      <i class="fa fa-chevron-left"></i> Cplex 回调函数分类
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/30/CplexCallback/" rel="next" title="Cplex Callback 的两种方式">
+      Cplex Callback 的两种方式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
 
@@ -310,6 +364,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Julia-%E6%B7%B7%E5%90%88%E7%BC%96%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">Julia 混合编程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E7%BC%96%E7%A8%8B%E7%9A%84%E9%9C%80%E8%A6%81"><span class="nav-number">1.1.</span> <span class="nav-text">混合编程的需要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cxx-jl"><span class="nav-number">1.2.</span> <span class="nav-text">Cxx.jl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PyCall-jl"><span class="nav-number">1.3.</span> <span class="nav-text">PyCall.jl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MATLAB-jl"><span class="nav-number">1.4.</span> <span class="nav-text">MATLAB.jl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E7%94%A8-C-%E4%BB%A3%E7%A0%81"><span class="nav-number">1.5.</span> <span class="nav-text">调用 C 代码</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

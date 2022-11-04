@@ -197,4 +197,33 @@
         <tag>Cplex</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Julia中的混合编程</title>
+    <url>/2022/11/01/MixedProg/</url>
+    <content><![CDATA[<h1 id="Julia-混合编程"><a href="#Julia-混合编程" class="headerlink" title="Julia 混合编程"></a>Julia 混合编程</h1><h2 id="混合编程的需要"><a href="#混合编程的需要" class="headerlink" title="混合编程的需要"></a>混合编程的需要</h2><p>在数值计算领域, 尽管有很多用其它语言写的高质量且成熟的库都可以用 Julia 重写, 但为了便捷利用现有的代码, 我们可能想要直接调用已有的语言代码.<br>当然这不仅仅发生在数值计算领域, 有时我们可能已经用其他语言完成了部分代码的编写, 但是由于某些原因, 我们可能需要使用 Julia 语言实现一些新的需求. 这些新的需求可能基于我们已有的实现, 此时为了避免重复编写代码, 我们在 Julia 中调用这些已实现的代码. </p>
+<p>Julia 中存在一些可用的库帮助我们做这些事情, 如 <a href="https://github.com/JuliaInterop/Cxx.jl">Cxx.jl</a>, <a href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a>, <a href="https://github.com/JuliaInterop/MATLAB.jl">MATLAB.jl</a>.</p>
+<h2 id="Cxx-jl"><a href="#Cxx-jl" class="headerlink" title="Cxx.jl"></a>Cxx.jl</h2><p>Cxx.jl 帮助我们调用 C++ 代码</p>
+<h2 id="PyCall-jl"><a href="#PyCall-jl" class="headerlink" title="PyCall.jl"></a>PyCall.jl</h2><p>PyCall.jl 帮助我们调用 Python 代码</p>
+<h2 id="MATLAB-jl"><a href="#MATLAB-jl" class="headerlink" title="MATLAB.jl"></a>MATLAB.jl</h2><p>MATLAB.jl 帮助我们调用 Matlab 代码</p>
+<h2 id="调用-C-代码"><a href="#调用-C-代码" class="headerlink" title="调用 C 代码"></a>调用 C 代码</h2><p>C 代码的调用方式</p>
+]]></content>
+      <categories>
+        <category>Julia</category>
+      </categories>
+      <tags>
+        <tag>Julia</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Cplex 回调函数分类</title>
+    <url>/2022/11/01/ClassifyCplexCB/</url>
+    <content><![CDATA[<h1 id="Cplex-回调函数分类"><a href="#Cplex-回调函数分类" class="headerlink" title="Cplex 回调函数分类"></a>Cplex 回调函数分类</h1><p>在利用 <code>Cplex</code> 求解问题的过程中, 我们可能会或多或少的利用 <code>Cplex</code> 的 <code>Callback</code> 函数来获取我们需要的东西.</p>
+]]></content>
+      <categories>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>Cplex</tag>
+      </tags>
+  </entry>
 </search>
