@@ -76,7 +76,7 @@
 <li>南方科大: <code>https://mirrors.sustech.edu.cn/julia</code></li>
 <li>南京大学: <code>https://mirrors.nju.edu.cn/julia</code></li>
 </ul>
-<h2 id="如何下载包"><a href="#如何下载包" class="headerlink" title="如何下载包"></a>如何下载包</h2><p>首先打开 Julia 交互式环境安装包</p>
+<h2 id="如何下载包"><a href="#如何下载包" class="headerlink" title="如何下载包"></a>如何下载包</h2><p>首先打开 Julia 交互式环境, 然后安装包</p>
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> Pkg</span><br><span class="line">Pkg.add(<span class="string">&quot;Packagename&quot;</span>)</span><br><span class="line"><span class="comment"># 一次安装多个包</span></span><br><span class="line">Pkg.add([<span class="string">&quot;name1&quot;</span>, <span class="string">&quot;name2&quot;</span>, <span class="string">&quot;name3&quot;</span>, ...])</span><br></pre></td></tr></table></figure>
 <p>或者</p>
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">julia&gt;  <span class="comment"># 键入 ], 然后出现如下界面</span></span><br><span class="line">(<span class="meta">@version</span>-num) pkg&gt;add Packagename</span><br></pre></td></tr></table></figure>
@@ -86,7 +86,7 @@
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">&gt;Pkg.add(<span class="string">&quot;SCIP&quot;</span>)</span><br></pre></td></tr></table></figure>
 <p>如果已经在本地安装过 SCIP, 并且有已经将 SCIP 的安装目录加入到系统环境中, 即</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SCIPOPTDIR = /scipdir <span class="comment"># scip 的安装目录</span></span><br></pre></td></tr></table></figure>
-<p>那么在调用 SCIP 是默认使用本地的 SCIP. 不过你也可以不必在本地安装 SCIP. 使用 <code>SCIP.jl</code> 提供的 SCIP 动态库 <code>SCIP_jll.jl</code>, 该动态库支持绝大多数芯片架构, 但是不支持 Apple <font color="red">M系列芯片</font>😭. (好像 SICP 暂时也不支持 M系列芯片)</p>
+<p>那么在调用 SCIP 是默认使用本地的 SCIP. 不过你也可以不必在本地安装 SCIP. 使用 <code>SCIP.jl</code> 提供的 SCIP 动态库 <code>SCIP_jll.jl</code>.</p>
 <p>使用 <code>SCIP_jll</code> 动态库的好处是, 你可以使用不同版本的 SCIP 去处理问题. 比如</p>
 <figure class="highlight julia"><table><tr><td class="code"><pre><span class="line">pkg&gt; add SCIP_jll<span class="meta">@v0</span><span class="number">.2</span><span class="number">.1</span>  <span class="comment"># 或者</span></span><br><span class="line">julia&gt;<span class="keyword">import</span> Pkg</span><br><span class="line">julia&gt;Pkg.add(name=<span class="string">&quot;SCIP_jll&quot;</span>, version=<span class="string">&quot;0.2.1&quot;</span>)</span><br></pre></td></tr></table></figure>
 <p>下表给出部分版本对应信息</p>
