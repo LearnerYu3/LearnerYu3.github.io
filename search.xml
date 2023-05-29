@@ -227,4 +227,28 @@
         <tag>Cplex</tag>
       </tags>
   </entry>
+  <entry>
+    <title>用 Python 调用求解器（Linux）</title>
+    <url>/2023/05/28/pythonAPIforSlover/</url>
+    <content><![CDATA[<h1 id="Python-调用-CPLEX-接口"><a href="#Python-调用-CPLEX-接口" class="headerlink" title="Python 调用 CPLEX 接口"></a>Python 调用 CPLEX 接口</h1><h2 id="配置-Python"><a href="#配置-Python" class="headerlink" title="配置 Python"></a>配置 Python</h2><p>首先确认本地有 Python 环境，并且该 Python 版本与 CPLEX 支持的版本一致。可在 CPLEX 文件夹下查看支持的 Python 版本。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 这里以cplex-20.1版本为例</span></span><br><span class="line">@hostname$ <span class="built_in">ls</span> cplex201/cplex/python</span><br><span class="line">3.7 3.8</span><br></pre></td></tr></table></figure>
+<p>以下描述以<code>3.8</code>版本为例。如果 Python 版本与 CPLEX 支持的版本不一致，则需要重新配置 Python 环境。建议使用 <code>Miniconda</code> 管理 Python 环境。<br>从官网下载最新的 <code>Miniconda</code>，然后配置一个 <code>Python3.8</code> 的使用环境</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">@hostname$ conda create -n mypy3.8 python=3.8</span><br><span class="line"><span class="comment"># 激活环境</span></span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line"><span class="comment"># 此时会提醒你需要 init shell 环境。输入如下命令</span></span><br><span class="line">@hostname$ conda init bash</span><br><span class="line"><span class="comment"># 然后 exit 退出当前 shell 环境</span></span><br></pre></td></tr></table></figure>
+<p>在退出当前终端环境后，再重新打开终端环境。然后按如下方式激活<code>mypy3.8</code>环境</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(base) @hostname$</span><br><span class="line"><span class="comment"># 停用当前 base 环境</span></span><br><span class="line">(base) @hostname$ conda deactivate</span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line">(mypy3.8) @hostname$ <span class="built_in">which</span> python3</span><br><span class="line">~/.conda/envs/mypy3.8/bin/python3</span><br></pre></td></tr></table></figure>
+<h2 id="配置-CPLEX-接口"><a href="#配置-CPLEX-接口" class="headerlink" title="配置 CPLEX 接口"></a>配置 CPLEX 接口</h2><p>首先下载支持 CPLEX 使用的第三方库</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ pip install docplex</span><br></pre></td></tr></table></figure>
+<p>安装成功后，配置环境变量（docplex 默认搜索本地 CPLEX 所需的环境变量）。打开 <code>.bashrc</code>，并添加</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> PYTHONPATH=/CPLEXHOMEPATH/cplex/python/3.8/x86-64_linux</span><br><span class="line"><span class="comment"># CPLEXHOMEPATH 指 CPLEX 安装路径</span></span><br></pre></td></tr></table></figure>
+<p>之后执行 <code>source ~/.bashrc</code> 即可。<br>可执行</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ python3 /CPLEXHOMEPATH/python/examples/mp/modeling/diet.py</span><br></pre></td></tr></table></figure>
+<p>查看是否正确执行。</p>
+]]></content>
+      <categories>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>CPLEX</tag>
+      </tags>
+  </entry>
 </search>
