@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"learneryu3.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="配置 slurm 集群环境">
+<meta property="og:type" content="article">
+<meta property="og:title" content="slurm 集群配置">
+<meta property="og:url" content="https://learneryu3.github.io/2026/01/28/slurm-notes/index.html">
+<meta property="og:site_name" content="My Blog">
+<meta property="og:description" content="配置 slurm 集群环境">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-28T12:52:45.000Z">
+<meta property="article:modified_time" content="2026-02-28T15:19:17.255Z">
+<meta property="article:author" content="Yu-Chengyang">
+<meta property="article:tag" content="slurm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://learneryu3.github.io/2026/01/28/slurm-notes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<script>
+  // 在首帧渲染前确定主题，避免刷新时的白屏闪烁（FOUC）
+  (function () {
+    var theme = 'light';
+    try {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') {
+        theme = stored;
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        theme = 'dark';
+      }
+    } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+
+  <title>slurm 集群配置 | My Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  
+  
+    <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+    
+    <script defer src="/js/cursor/explosion.min.js"></script>
+  
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">My Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">5</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">5</span></a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://learneryu3.github.io/2026/01/28/slurm-notes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu-Chengyang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="My Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          slurm 集群配置
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-01-28 20:52:45" itemprop="dateCreated datePublished" datetime="2026-01-28T20:52:45+08:00">2026-01-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-02-28 23:19:17" itemprop="dateModified" datetime="2026-02-28T23:19:17+08:00">2026-02-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+            <div class="post-description">配置 slurm 集群环境</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="配置-slurm-集群环境"><a href="#配置-slurm-集群环境" class="headerlink" title="配置 slurm 集群环境"></a>配置 slurm 集群环境</h1><p>本文档介绍如何配置一个包含三个节点的 SLURM 集群：</p>
+<ul>
+<li><strong>master</strong>: 控制节点（登录节点 + 作业调度管理）</li>
+<li><strong>node1</strong>: 计算节点</li>
+<li><strong>node2</strong>: 计算节点</li>
+</ul>
+<hr>
+<h2 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h2><h3 id="1-1-网络配置"><a href="#1-1-网络配置" class="headerlink" title="1.1 网络配置"></a>1.1 网络配置</h3><p>确保三台服务器之间可以互相通信：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/hosts 配置示例</span></span><br><span class="line">192.168.1.10  master</span><br><span class="line">192.168.1.11  node1</span><br><span class="line">192.168.1.12  node2</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-时间同步"><a href="#1-2-时间同步" class="headerlink" title="1.2 时间同步"></a>1.2 时间同步</h3><p>所有节点需要保持时间一致：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在所有节点上安装 chrony</span></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install chrony</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> chronyd</span><br><span class="line">sudo systemctl start chronyd</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-防火墙配置"><a href="#1-3-防火墙配置" class="headerlink" title="1.3 防火墙配置"></a>1.3 防火墙配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># SLURM 使用的端口</span></span><br><span class="line"><span class="comment"># Slurmctld: 6817/tcp</span></span><br><span class="line"><span class="comment"># Slurmd: 6818/tcp</span></span><br><span class="line"><span class="comment"># Slurmdbd: 6819/tcp</span></span><br><span class="line"></span><br><span class="line">sudo ufw allow 6817/tcp</span><br><span class="line">sudo ufw allow 6818/tcp</span><br><span class="line">sudo ufw allow 6819/tcp</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-创建-munge-用户和组"><a href="#1-4-创建-munge-用户和组" class="headerlink" title="1.4 创建 munge 用户和组"></a>1.4 创建 munge 用户和组</h3><p>在所有节点上执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo groupadd -g 1101 munge</span><br><span class="line">sudo useradd -m -c <span class="string">&quot;MUNGE Uid &#x27;N&#x27; Gid Emporium&quot;</span> -d /var/lib/munge -u 1101 -g munge -s /sbin/nologin munge</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、安装依赖和软件"><a href="#二、安装依赖和软件" class="headerlink" title="二、安装依赖和软件"></a>二、安装依赖和软件</h2><h3 id="2-1-安装-munge（所有节点）"><a href="#2-1-安装-munge（所有节点）" class="headerlink" title="2.1 安装 munge（所有节点）"></a>2.1 安装 munge（所有节点）</h3><p>Munge 用于节点间身份认证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y munge libmunge-dev libmunge2</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-安装-SLURM-编译依赖（所有节点）"><a href="#2-2-安装-SLURM-编译依赖（所有节点）" class="headerlink" title="2.2 安装 SLURM 编译依赖（所有节点）"></a>2.2 安装 SLURM 编译依赖（所有节点）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装编译工具和依赖库</span></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y \</span><br><span class="line">    build-essential \</span><br><span class="line">    libssl-dev \</span><br><span class="line">    libmunge-dev \</span><br><span class="line">    libhwloc-dev \</span><br><span class="line">    libpam0g-dev \</span><br><span class="line">    libjson-c-dev \</span><br><span class="line">    libreadline-dev \</span><br><span class="line">    autoconf \</span><br><span class="line">    automake \</span><br><span class="line">    libtool \</span><br><span class="line">    pkg-config</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-编译安装-SLURM（所有节点）"><a href="#2-3-编译安装-SLURM（所有节点）" class="headerlink" title="2.3 编译安装 SLURM（所有节点）"></a>2.3 编译安装 SLURM（所有节点）</h3><h4 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载 SLURM 源码</span></span><br><span class="line"><span class="built_in">cd</span> /usr/local/src</span><br><span class="line">wget https://download.schedmd.com/slurm/slurm-24.05.2.tar.bz2</span><br><span class="line">tar -xjf slurm-24.05.2.tar.bz2</span><br><span class="line"><span class="built_in">cd</span> slurm-24.05.2</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置编译选项"><a href="#配置编译选项" class="headerlink" title="配置编译选项"></a>配置编译选项</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建 slurm 用户和组（所有节点）</span></span><br><span class="line">sudo groupadd -g 1102 slurm</span><br><span class="line">sudo useradd -m -c <span class="string">&quot;SLURM workload manager&quot;</span> -d /var/lib/slurm -u 1102 -g slurm -s /sbin/nologin slurm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置编译</span></span><br><span class="line">./configure \</span><br><span class="line">  --prefix=/usr/local/slurm \</span><br><span class="line">  --sysconfdir=/etc/slurm \</span><br><span class="line">  --with-munge=/usr \</span><br><span class="line">  --with-hwloc=/usr \</span><br><span class="line">  --enable-pam \</span><br><span class="line">  --enable-debug</span><br></pre></td></tr></table></figure>
+
+<h4 id="编译和安装"><a href="#编译和安装" class="headerlink" title="编译和安装"></a>编译和安装</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译（使用多核加速）</span></span><br><span class="line">make -j $(<span class="built_in">nproc</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装辅助文件"><a href="#安装辅助文件" class="headerlink" title="安装辅助文件"></a>安装辅助文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 man 手册</span></span><br><span class="line"><span class="built_in">cd</span> /usr/local/src/slurm-24.05.2</span><br><span class="line">sudo make install-man</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建符号链接（可选，方便直接使用命令）</span></span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/bin/* /usr/local/bin/</span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/sbin/* /usr/local/sbin/</span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/lib/* /usr/local/lib/</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-systemd-服务"><a href="#配置-systemd-服务" class="headerlink" title="配置 systemd 服务"></a>配置 systemd 服务</h4><p>创建 <code>/etc/systemd/system/slurmctld.service</code>（仅 master 节点）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/systemd/system/slurmctld.service &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">[Unit]</span><br><span class="line">Description=SLURM controller daemon</span><br><span class="line">After=network.target munge.service</span><br><span class="line">ConditionPathExists=/etc/slurm/slurm.conf</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">ExecStart=/usr/local/slurm/sbin/slurmctld -D -s</span><br><span class="line">ExecReload=/bin/kill -HUP <span class="variable">$MAINPID</span></span><br><span class="line">KillMode=process</span><br><span class="line">LimitNOFILE=65536</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=5</span><br><span class="line">User=slurm</span><br><span class="line">Group=slurm</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>创建 <code>/etc/systemd/system/slurmd.service</code>（node1、node2 节点）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/systemd/system/slurmd.service &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">[Unit]</span><br><span class="line">Description=SLURM node daemon</span><br><span class="line">After=network.target munge.service</span><br><span class="line">ConditionPathExists=/etc/slurm/slurm.conf</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">ExecStart=/usr/local/slurm/sbin/slurmd -D -s</span><br><span class="line">ExecReload=/bin/kill -HUP <span class="variable">$MAINPID</span></span><br><span class="line">KillMode=process</span><br><span class="line">LimitNOFILE=65536</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=5</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>重载 systemd 服务：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、配置-Munge"><a href="#三、配置-Munge" class="headerlink" title="三、配置 Munge"></a>三、配置 Munge</h2><h3 id="3-1-在-master-节点生成密钥"><a href="#3-1-在-master-节点生成密钥" class="headerlink" title="3.1 在 master 节点生成密钥"></a>3.1 在 master 节点生成密钥</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成 munge 密钥</span></span><br><span class="line">sudo /usr/sbin/create-munge-key -f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置权限</span></span><br><span class="line">sudo <span class="built_in">chown</span> -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /etc/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/lib/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/log/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 400 /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-复制密钥到计算节点"><a href="#3-2-复制密钥到计算节点" class="headerlink" title="3.2 复制密钥到计算节点"></a>3.2 复制密钥到计算节点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从 master 复制到 node1</span></span><br><span class="line">sudo scp /etc/munge/munge.key root@node1:/etc/munge/</span><br><span class="line">sudo scp /etc/munge/munge.key root@node2:/etc/munge/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在每个计算节点设置权限</span></span><br><span class="line"><span class="comment"># node1 和 node2 上执行</span></span><br><span class="line">sudo <span class="built_in">chown</span> munge: /etc/munge/munge.key</span><br><span class="line">sudo <span class="built_in">chmod</span> 400 /etc/munge/munge.key</span><br><span class="line">sudo <span class="built_in">chown</span> -R munge: /var/lib/munge /var/log/munge /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/lib/munge /var/log/munge /var/run/munge</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-启动-munge-服务（所有节点）"><a href="#3-3-启动-munge-服务（所有节点）" class="headerlink" title="3.3 启动 munge 服务（所有节点）"></a>3.3 启动 munge 服务（所有节点）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">sudo systemctl start munge</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line">munge -n</span><br><span class="line">munge -n | unmunge</span><br><span class="line">remunge</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、配置-SLURM"><a href="#四、配置-SLURM" class="headerlink" title="四、配置 SLURM"></a>四、配置 SLURM</h2><h3 id="4-1-创建配置目录"><a href="#4-1-创建配置目录" class="headerlink" title="4.1 创建配置目录"></a>4.1 创建配置目录</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 所有节点上执行</span></span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /etc/slurm</span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /var/spool/slurm/ctld</span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /var/spool/slurm/d</span><br><span class="line">sudo <span class="built_in">chown</span> -R slurm:slurm /var/spool/slurm</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm/ctld</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm/d</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-master-节点配置"><a href="#4-2-master-节点配置" class="headerlink" title="4.2 master 节点配置"></a>4.2 master 节点配置</h3><p>创建 <code>/etc/slurm/slurm.conf</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/slurm/slurm.conf &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">ClusterName=slurm_cluster</span><br><span class="line">SlurmctldHost=master</span><br><span class="line">SlurmctldPort=6817</span><br><span class="line">SlurmdPort=6818</span><br><span class="line">AuthType=auth/munge</span><br><span class="line">CryptoType=crypto/munge</span><br><span class="line">StateSaveLocation=/var/spool/slurm/ctld</span><br><span class="line">SlurmdSpoolDir=/var/spool/slurm/d</span><br><span class="line">SchedulerType=<span class="built_in">sched</span>/backfill</span><br><span class="line">SelectType=select/cons_tres</span><br><span class="line">SelectTypeParameters=CR_Core</span><br><span class="line">MaxJobCount=10000</span><br><span class="line">MaxArraySize=10000</span><br><span class="line">MaxStepCount=40000</span><br><span class="line">MaxTasksPerNode=128</span><br><span class="line">AccountingStorageType=accounting_storage/none</span><br><span class="line">JobAcctGatherType=jobacct_gather/none</span><br><span class="line">SlurmctldLogFile=/var/log/slurm/slurmctld.log</span><br><span class="line">SlurmdLogFile=/var/log/slurm/slurmd.log</span><br><span class="line">SlurmSchedLogFile=/var/log/slurm/slurmsched.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 节点定义</span></span><br><span class="line">NodeName=node1 NodeAddr=node1 CPUs=4 RealMemory=8192 State=UNKNOWN</span><br><span class="line">NodeName=node2 NodeAddr=node2 CPUs=4 RealMemory=8192 State=UNKNOWN</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分区定义</span></span><br><span class="line">PartitionName=compute Nodes=node1,node2 Default=YES MaxTime=INFINITE State=UP</span><br><span class="line"></span><br><span class="line"><span class="comment"># 日志目录</span></span><br><span class="line">SlurmctldPidFile=/var/run/slurmctld.pid</span><br><span class="line">SlurmdPidFile=/var/run/slurmd.pid</span><br><span class="line">SlurmdSpoolDir=/var/spool/slurm/d</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-创建-cgroup-配置"><a href="#4-3-创建-cgroup-配置" class="headerlink" title="4.3 创建 cgroup 配置"></a>4.3 创建 cgroup 配置</h3><p>创建 <code>/etc/slurm/cgroup.conf</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/slurm/cgroup.conf &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">CgroupAutomount=<span class="built_in">yes</span></span><br><span class="line">ConstrainCores=<span class="built_in">yes</span></span><br><span class="line">ConstrainRAMSpace=<span class="built_in">yes</span></span><br><span class="line">ConstrainSwapSpace=<span class="built_in">yes</span></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-复制配置到计算节点"><a href="#4-4-复制配置到计算节点" class="headerlink" title="4.4 复制配置到计算节点"></a>4.4 复制配置到计算节点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从 master 复制</span></span><br><span class="line">sudo scp /etc/slurm/slurm.conf root@node1:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/slurm.conf root@node2:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/cgroup.conf root@node1:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/cgroup.conf root@node2:/etc/slurm/</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-创建日志目录（所有节点）"><a href="#4-5-创建日志目录（所有节点）" class="headerlink" title="4.5 创建日志目录（所有节点）"></a>4.5 创建日志目录（所有节点）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">mkdir</span> -p /var/log/slurm</span><br><span class="line">sudo <span class="built_in">chown</span> -R slurm:slurm /var/log/slurm</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、启动-SLURM-服务"><a href="#五、启动-SLURM-服务" class="headerlink" title="五、启动 SLURM 服务"></a>五、启动 SLURM 服务</h2><h3 id="5-1-启动-slurmd（node1、node2）"><a href="#5-1-启动-slurmd（node1、node2）" class="headerlink" title="5.1 启动 slurmd（node1、node2）"></a>5.1 启动 slurmd（node1、node2）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 node1 和 node2 上执行</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">sudo systemctl start slurmd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line">sudo systemctl status slurmd</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-启动-slurmctld（master）"><a href="#5-2-启动-slurmctld（master）" class="headerlink" title="5.2 启动 slurmctld（master）"></a>5.2 启动 slurmctld（master）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 master 上执行</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line">sudo systemctl status slurmctld</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-验证节点状态"><a href="#5-3-验证节点状态" class="headerlink" title="5.3 验证节点状态"></a>5.3 验证节点状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 master 上执行</span></span><br><span class="line">sinfo</span><br><span class="line">scontrol show nodes</span><br><span class="line">scontrol show partition</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、验证集群"><a href="#六、验证集群" class="headerlink" title="六、验证集群"></a>六、验证集群</h2><h3 id="6-1-查看集群状态"><a href="#6-1-查看集群状态" class="headerlink" title="6.1 查看集群状态"></a>6.1 查看集群状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看节点信息</span></span><br><span class="line">sinfo</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出示例：</span></span><br><span class="line"><span class="comment"># PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span></span><br><span class="line"><span class="comment"># compute*     up   infinite      2   idle node1,node2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看详细节点信息</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看队列信息</span></span><br><span class="line">squeue</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-提交测试作业"><a href="#6-2-提交测试作业" class="headerlink" title="6.2 提交测试作业"></a>6.2 提交测试作业</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建测试脚本</span></span><br><span class="line"><span class="built_in">cat</span> &gt; hello.sh &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#SBATCH -J test-job</span></span><br><span class="line"><span class="comment">#SBATCH -N 1</span></span><br><span class="line"><span class="comment">#SBATCH -n 1</span></span><br><span class="line"><span class="comment">#SBATCH --time=00:05:00</span></span><br><span class="line"><span class="comment">#SBATCH -o hello-%j.out</span></span><br><span class="line"><span class="comment">#SBATCH -e hello-%j.err</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Hello from <span class="subst">$(hostname)</span>&quot;</span></span><br><span class="line">srun hostname</span><br><span class="line"><span class="built_in">date</span></span><br><span class="line"><span class="built_in">sleep</span> 30</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提交作业</span></span><br><span class="line">sbatch hello.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业状态</span></span><br><span class="line">squeue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看输出</span></span><br><span class="line"><span class="built_in">cat</span> hello-*.out</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-常用-SLURM-命令"><a href="#6-3-常用-SLURM-命令" class="headerlink" title="6.3 常用 SLURM 命令"></a>6.3 常用 SLURM 命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看集群状态</span></span><br><span class="line">sinfo</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业队列</span></span><br><span class="line">squeue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业详情</span></span><br><span class="line">scontrol show job &lt;job_id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消作业</span></span><br><span class="line">scancel &lt;job_id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看节点详情</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看分区信息</span></span><br><span class="line">scontrol show partition</span><br><span class="line"></span><br><span class="line"><span class="comment"># 交互式运行作业</span></span><br><span class="line">srun --pty bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 交互式作业分配资源</span></span><br><span class="line">salloc -N 1 -n 4 --time=01:00:00</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、常见问题排查"><a href="#七、常见问题排查" class="headerlink" title="七、常见问题排查"></a>七、常见问题排查</h2><h3 id="7-1-节点状态为-DOWN"><a href="#7-1-节点状态为-DOWN" class="headerlink" title="7.1 节点状态为 DOWN"></a>7.1 节点状态为 DOWN</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看节点状态</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新设置节点为 IDLE</span></span><br><span class="line">sudo scontrol update NodeName=node1 State=IDLE</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-munge-认证失败"><a href="#7-2-munge-认证失败" class="headerlink" title="7.2 munge 认证失败"></a>7.2 munge 认证失败</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查 munge 服务</span></span><br><span class="line">sudo systemctl status munge</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证 munge 密钥</span></span><br><span class="line"><span class="built_in">ls</span> -la /etc/munge/munge.key</span><br><span class="line"><span class="comment"># 应该是 munge:munge 权限 400</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新启动 munge</span></span><br><span class="line">sudo systemctl restart munge</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-日志查看"><a href="#7-3-日志查看" class="headerlink" title="7.3 日志查看"></a>7.3 日志查看</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看 slurmctld 日志</span></span><br><span class="line"><span class="built_in">tail</span> -f /var/log/slurm/slurmctld.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 slurmd 日志（计算节点）</span></span><br><span class="line"><span class="built_in">tail</span> -f /var/log/slurm/slurmd.log</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-4-编译相关问题"><a href="#7-4-编译相关问题" class="headerlink" title="7.4 编译相关问题"></a>7.4 编译相关问题</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果遇到找不到库的问题</span></span><br><span class="line"><span class="comment"># 检查 pkg-config 是否能找到库</span></span><br><span class="line">pkg-config --libs munge</span><br><span class="line">pkg-config --libs hwloc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果找不到，检查库文件位置</span></span><br><span class="line">ldconfig -p | grep munge</span><br><span class="line">ldconfig -p | grep hwloc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加库路径（如果需要）</span></span><br><span class="line">sudo <span class="built_in">echo</span> <span class="string">&quot;/usr/local/lib&quot;</span> &gt;&gt; /etc/ld.so.conf</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、参考资源"><a href="#八、参考资源" class="headerlink" title="八、参考资源"></a>八、参考资源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://slurm.schedmd.com/documentation.html">SLURM 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://slurm.schedmd.com/configurator.html">SLURM 配置生成器</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.schedmd.com/downloads.php">SLURM 源码下载</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    
+      <div>
+    
+        <div class="passage-end-tag" style="text-align:center;">// EOF —— 本文结束，感谢阅读</div>
+    
+</div>
+
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/slurm/" rel="tag"># slurm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/28/pythonAPIforSlover/" rel="next" title="用 Python 调用求解器（Linux）">
+      用 Python 调用求解器（Linux） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-slurm-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">配置 slurm 集群环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">1.1.</span> <span class="nav-text">一、环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 网络配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 时间同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 防火墙配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E5%88%9B%E5%BB%BA-munge-%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84"><span class="nav-number">1.1.4.</span> <span class="nav-text">1.4 创建 munge 用户和组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%92%8C%E8%BD%AF%E4%BB%B6"><span class="nav-number">1.2.</span> <span class="nav-text">二、安装依赖和软件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%AE%89%E8%A3%85-munge%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 安装 munge（所有节点）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%AE%89%E8%A3%85-SLURM-%E7%BC%96%E8%AF%91%E4%BE%9D%E8%B5%96%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 安装 SLURM 编译依赖（所有节点）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85-SLURM%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 编译安装 SLURM（所有节点）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%A0%81"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">下载源码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">配置编译选项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%92%8C%E5%AE%89%E8%A3%85"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">编译和安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E8%BE%85%E5%8A%A9%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">安装辅助文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-systemd-%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.2.3.5.</span> <span class="nav-text">配置 systemd 服务</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%85%8D%E7%BD%AE-Munge"><span class="nav-number">1.3.</span> <span class="nav-text">三、配置 Munge</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%9C%A8-master-%E8%8A%82%E7%82%B9%E7%94%9F%E6%88%90%E5%AF%86%E9%92%A5"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 在 master 节点生成密钥</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%A4%8D%E5%88%B6%E5%AF%86%E9%92%A5%E5%88%B0%E8%AE%A1%E7%AE%97%E8%8A%82%E7%82%B9"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 复制密钥到计算节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%90%AF%E5%8A%A8-munge-%E6%9C%8D%E5%8A%A1%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%EF%BC%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 启动 munge 服务（所有节点）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E9%85%8D%E7%BD%AE-SLURM"><span class="nav-number">1.4.</span> <span class="nav-text">四、配置 SLURM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%88%9B%E5%BB%BA%E9%85%8D%E7%BD%AE%E7%9B%AE%E5%BD%95"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 创建配置目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-master-%E8%8A%82%E7%82%B9%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 master 节点配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E5%88%9B%E5%BB%BA-cgroup-%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 创建 cgroup 配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E5%A4%8D%E5%88%B6%E9%85%8D%E7%BD%AE%E5%88%B0%E8%AE%A1%E7%AE%97%E8%8A%82%E7%82%B9"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.4 复制配置到计算节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-%E5%88%9B%E5%BB%BA%E6%97%A5%E5%BF%97%E7%9B%AE%E5%BD%95%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%EF%BC%89"><span class="nav-number">1.4.5.</span> <span class="nav-text">4.5 创建日志目录（所有节点）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%90%AF%E5%8A%A8-SLURM-%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.5.</span> <span class="nav-text">五、启动 SLURM 服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%90%AF%E5%8A%A8-slurmd%EF%BC%88node1%E3%80%81node2%EF%BC%89"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 启动 slurmd（node1、node2）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%90%AF%E5%8A%A8-slurmctld%EF%BC%88master%EF%BC%89"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 启动 slurmctld（master）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E9%AA%8C%E8%AF%81%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81"><span class="nav-number">1.5.3.</span> <span class="nav-text">5.3 验证节点状态</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E9%AA%8C%E8%AF%81%E9%9B%86%E7%BE%A4"><span class="nav-number">1.6.</span> <span class="nav-text">六、验证集群</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E7%8A%B6%E6%80%81"><span class="nav-number">1.6.1.</span> <span class="nav-text">6.1 查看集群状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E6%8F%90%E4%BA%A4%E6%B5%8B%E8%AF%95%E4%BD%9C%E4%B8%9A"><span class="nav-number">1.6.2.</span> <span class="nav-text">6.2 提交测试作业</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%B8%B8%E7%94%A8-SLURM-%E5%91%BD%E4%BB%A4"><span class="nav-number">1.6.3.</span> <span class="nav-text">6.3 常用 SLURM 命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、常见问题排查</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81%E4%B8%BA-DOWN"><span class="nav-number">1.7.1.</span> <span class="nav-text">7.1 节点状态为 DOWN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-munge-%E8%AE%A4%E8%AF%81%E5%A4%B1%E8%B4%A5"><span class="nav-number">1.7.2.</span> <span class="nav-text">7.2 munge 认证失败</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E6%97%A5%E5%BF%97%E6%9F%A5%E7%9C%8B"><span class="nav-number">1.7.3.</span> <span class="nav-text">7.3 日志查看</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E7%BC%96%E8%AF%91%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98"><span class="nav-number">1.7.4.</span> <span class="nav-text">7.4 编译相关问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%BA%90"><span class="nav-number">1.8.</span> <span class="nav-text">八、参考资源</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu-Chengyang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LearnerYu3" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LearnerYu3" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1330286215@qq.com" title="E-Mail → mailto:1330286215@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-code"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu-Chengyang</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">16k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">15 分钟</span>
+</div>
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共5k字</span>
+<!--
+ <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script>
+  // 主题切换按钮：挂载到顶部品牌条右侧
+  (function () {
+    var root = document.documentElement;
+
+    function icon(theme) {
+      return theme === 'dark' ? 'fa fa-sun' : 'fa fa-moon';
+    }
+
+    function label(theme) {
+      return theme === 'dark' ? '切换到浅色模式' : '切换到深色模式';
+    }
+
+    function mount() {
+      var bar = document.querySelector('.site-brand-container');
+      if (!bar || bar.querySelector('.theme-toggle')) return;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'theme-toggle';
+      btn.setAttribute('aria-label', label(root.dataset.theme));
+      btn.innerHTML = '<i class="' + icon(root.dataset.theme) + '"></i>';
+
+      btn.addEventListener('click', function () {
+        var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        btn.innerHTML = '<i class="' + icon(next) + '"></i>';
+        btn.setAttribute('aria-label', label(next));
+      });
+
+      bar.appendChild(btn);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mount);
+    } else {
+      mount();
+    }
+  })();
+</script>
+
+</body>
+</html>

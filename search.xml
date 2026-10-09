@@ -1,6 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Cplex 回调函数分类</title>
+    <url>/2022/11/01/ClassifyCplexCB/</url>
+    <content><![CDATA[<h1 id="Cplex-回调函数分类"><a href="#Cplex-回调函数分类" class="headerlink" title="Cplex 回调函数分类"></a>Cplex 回调函数分类</h1><p>在利用 <code>Cplex</code> 求解问题的过程中, 我们可能会或多或少的利用 <code>Cplex</code> 的 <code>Callback</code> 函数来获取我们需要的东西.</p>
+]]></content>
+      <categories>
+        <category>MIP</category>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>Cplex</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Cplex Callback 的两种方式</title>
+    <url>/2022/08/30/CplexCallback/</url>
+    <content><![CDATA[<p>在 <code>Cplex</code> 中存在两种 <code>Callback</code> 方式, 一种是特定的 <code>Callback</code> 调用, 一种则是通用的 <code>Callback</code> 调用. 即</p>
+<ul>
+<li><code>lazyconstraint</code>, <code>usercut</code>, <code>heuristic</code>, <code>branch</code></li>
+<li><code>general callback</code><br>其中特定的 <code>Callback</code> 之间彼此是相互独立的, 其不同的回调对应着不同的 <code>wherefrom</code> 值</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left"><code>Callback</code></th>
+<th align="left"><code>wherefrom</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>lazyconstraint</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_FEAS</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_UNBD    </code></td>
+</tr>
+<tr>
+<td align="left"><code>usercut</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_CUT_LOOP</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_LAST</code></td>
+</tr>
+<tr>
+<td align="left"><code>heuristic</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_HEURISTIC</code></td>
+</tr>
+<tr>
+<td align="left"><code>branch</code></td>
+<td align="left"><code>CPX_CALLBACK_MIP_BRANCH</code></td>
+</tr>
+</tbody></table>
+<p>而通用的 <code>Callback</code> 则是一种连贯的调用方式, 即在一个回调函数中根据不同的上下文信息 (context) 判断所处的求解阶段, 从而进行不同的处理, 这种回调方式依赖于 <code>context</code>, 其取值包括</p>
+<ul>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_UP</code></li>
+<li><code>CPX_CALLBACKCONTEXT_THREAD_DOWN</code></li>
+<li><code>CPX_CALLBACKCONTEXT_CANDIDATE</code></li>
+<li><code>CPX_CALLBACKCONTEXT_LOCAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_GLOBAL_PROGRESS</code></li>
+<li><code>CPX_CALLBACKCONTEXT_RELAXATION</code></li>
+<li><code>CPX_CALLBACKCONTEXT_BRANCHING</code></li>
+</ul>
+<p>显然, 后者或许是一种更方便且通用的回调方式. 比如, 当我们想要实现 <code>lazyconstraint</code> 和 <code>branch</code> 这两种回调, 依赖 <code>wherefrom</code> 我们需要编写两种回调函数. 而依赖于 <code>context</code> 实现回调时, 我们仅需编写一个通用的回调函数. 关于 <code>Benders Decomposition</code> 的两种实现方式可以参考 <code>Cplex</code> 下 <code>cplex/example/src/c</code> 文件夹下 <code>bendersatsp1.c\bendersatsp2.c</code></p>
+<h2 id="Julia-中-Cplex-jl-实现的-Callback-方式"><a href="#Julia-中-Cplex-jl-实现的-Callback-方式" class="headerlink" title="Julia 中 Cplex.jl 实现的 Callback 方式"></a>Julia 中 Cplex.jl 实现的 Callback 方式</h2><p>在 <code>Julia</code> 中 <code>Cplex</code> 接口已经放弃了依赖于 <code>wherefrom</code> 的方式, 而是保留了依赖于 <code>context</code> 的回调方式. 不过 <code>Cplex.jl</code> 也提供了自己的特定 <code>Callback</code> 接口</p>
+<ul>
+<li><code>lazyconstraint</code></li>
+<li><code>usercut</code></li>
+<li><code>heuristic</code></li>
+</ul>
+<p>这里以 <code>Benders Decomposition</code> 为例, 给出两种实现方式以观察两种实现方式的区别</p>
+<h3 id="特定-Callback"><a href="#特定-Callback" class="headerlink" title="特定 Callback"></a>特定 <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> LazyCons(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> UserCut(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.LazyConstraintCallback(), LazyCons)</span><br><span class="line">MOI.set(model, MOI.UserCutCallback(), UserCut)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+
+<h3 id="General-Callback"><a href="#General-Callback" class="headerlink" title="General Callback"></a>General <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> callback_function(cb_data::CPLEX.CallbackContext, context_id::<span class="built_in">Clong</span>)</span><br><span class="line">    <span class="keyword">if</span> context_id == CPX_CALLBACKCONTEXT_CANDIDATE</span><br><span class="line">        stat = CPXcallbackcandidateispoint(cb_data, ispoint_p)</span><br><span class="line">        <span class="meta">@assert</span> stat == <span class="number">0</span> <span class="string">&quot;get candidate failed&quot;</span></span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">elseif</span> context_id == CPX_CALLBACKCONTEXT_RELAXATION</span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, CPLEX.CallbackFunction(), callback_function)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
+<p>更多具体细节可以参考 <a href="https://github.com/jump-dev/CPLEX.jl">CPLEX.jl</a></p>
+]]></content>
+      <categories>
+        <category>MIP</category>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>Cplex</tag>
+        <tag>JuMP</tag>
+        <tag>Julia</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Julia中的混合编程</title>
+    <url>/2022/11/01/MixedProg/</url>
+    <content><![CDATA[<h1 id="Julia-混合编程"><a href="#Julia-混合编程" class="headerlink" title="Julia 混合编程"></a>Julia 混合编程</h1><h2 id="混合编程的需要"><a href="#混合编程的需要" class="headerlink" title="混合编程的需要"></a>混合编程的需要</h2><p>在数值计算领域, 尽管有很多用其它语言写的高质量且成熟的库都可以用 Julia 重写, 但为了便捷利用现有的代码, 我们可能想要直接调用已有的语言代码.<br>当然这不仅仅发生在数值计算领域, 有时我们可能已经用其他语言完成了部分代码的编写, 但是由于某些原因, 我们可能需要使用 Julia 语言实现一些新的需求. 这些新的需求可能基于我们已有的实现, 此时为了避免重复编写代码, 我们在 Julia 中调用这些已实现的代码. </p>
+<p>Julia 中存在一些可用的库帮助我们做这些事情, 如 <a href="https://github.com/JuliaInterop/Cxx.jl">Cxx.jl</a>, <a href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a>, <a href="https://github.com/JuliaInterop/MATLAB.jl">MATLAB.jl</a>.</p>
+<h2 id="Cxx-jl"><a href="#Cxx-jl" class="headerlink" title="Cxx.jl"></a>Cxx.jl</h2><p>Cxx.jl 帮助我们调用 C++ 代码</p>
+<h2 id="PyCall-jl"><a href="#PyCall-jl" class="headerlink" title="PyCall.jl"></a>PyCall.jl</h2><p>PyCall.jl 帮助我们调用 Python 代码</p>
+<h2 id="MATLAB-jl"><a href="#MATLAB-jl" class="headerlink" title="MATLAB.jl"></a>MATLAB.jl</h2><p>MATLAB.jl 帮助我们调用 Matlab 代码</p>
+<h2 id="调用-C-代码"><a href="#调用-C-代码" class="headerlink" title="调用 C 代码"></a>调用 C 代码</h2><p>C 代码的调用方式</p>
+]]></content>
+      <categories>
+        <category>Julia</category>
+      </categories>
+      <tags>
+        <tag>Julia</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>使用 Documneter.jl 生成代码文档</title>
     <url>/2022/06/12/codeDocs/</url>
     <content><![CDATA[<p>对于不同的语言基本上都会有不同的工具支持代码文档生成. 代码文档生成对于代码的管理以及学习发挥着重要作用</p>
@@ -60,6 +155,131 @@
       </categories>
       <tags>
         <tag>Julia</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>用 Python 调用求解器（Linux）</title>
+    <url>/2023/05/28/pythonAPIforSlover/</url>
+    <content><![CDATA[<h1 id="Python-调用-CPLEX-接口"><a href="#Python-调用-CPLEX-接口" class="headerlink" title="Python 调用 CPLEX 接口"></a>Python 调用 CPLEX 接口</h1><h2 id="配置-Python"><a href="#配置-Python" class="headerlink" title="配置 Python"></a>配置 Python</h2><p>首先确认本地有 Python 环境，并且该 Python 版本与 CPLEX 支持的版本一致。可在 CPLEX 文件夹下查看支持的 Python 版本。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 这里以cplex-20.1版本为例</span></span><br><span class="line">@hostname$ <span class="built_in">ls</span> cplex201/cplex/python</span><br><span class="line">3.7 3.8</span><br></pre></td></tr></table></figure>
+<p>以下描述以<code>3.8</code>版本为例。如果 Python 版本与 CPLEX 支持的版本不一致，则需要重新配置 Python 环境。建议使用 <code>Miniconda</code> 管理 Python 环境。<br>从官网下载最新的 <code>Miniconda</code>，然后配置一个 <code>Python3.8</code> 的使用环境</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">@hostname$ conda create -n mypy3.8 python=3.8</span><br><span class="line"><span class="comment"># 激活环境</span></span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line"><span class="comment"># 此时会提醒你需要 init shell 环境。输入如下命令</span></span><br><span class="line">@hostname$ conda init bash</span><br><span class="line"><span class="comment"># 然后 exit 退出当前 shell 环境</span></span><br></pre></td></tr></table></figure>
+<p>在退出当前终端环境后，再重新打开终端环境。然后按如下方式激活<code>mypy3.8</code>环境</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(base) @hostname$</span><br><span class="line"><span class="comment"># 停用当前 base 环境</span></span><br><span class="line">(base) @hostname$ conda deactivate</span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line">(mypy3.8) @hostname$ <span class="built_in">which</span> python3</span><br><span class="line">~/.conda/envs/mypy3.8/bin/python3</span><br></pre></td></tr></table></figure>
+<h2 id="配置-CPLEX-接口"><a href="#配置-CPLEX-接口" class="headerlink" title="配置 CPLEX 接口"></a>配置 CPLEX 接口</h2><p>首先下载支持 CPLEX 使用的第三方库</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ pip install docplex</span><br></pre></td></tr></table></figure>
+<p>安装成功后，配置环境变量（docplex 默认搜索本地 CPLEX 所需的环境变量）。打开 <code>.bashrc</code>，并添加</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> PYTHONPATH=/CPLEXHOMEPATH/cplex/python/3.8/x86-64_linux</span><br><span class="line"><span class="comment"># CPLEXHOMEPATH 指 CPLEX 安装路径</span></span><br></pre></td></tr></table></figure>
+<p>之后执行 <code>source ~/.bashrc</code> 即可。<br>可执行</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ python3 /CPLEXHOMEPATH/python/examples/mp/modeling/diet.py</span><br></pre></td></tr></table></figure>
+<p>查看是否正确执行。</p>
+]]></content>
+      <categories>
+        <category>Solver</category>
+      </categories>
+      <tags>
+        <tag>CPLEX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>slurm 集群配置</title>
+    <url>/2026/01/28/slurm-notes/</url>
+    <content><![CDATA[<h1 id="配置-slurm-集群环境"><a href="#配置-slurm-集群环境" class="headerlink" title="配置 slurm 集群环境"></a>配置 slurm 集群环境</h1><p>本文档介绍如何配置一个包含三个节点的 SLURM 集群：</p>
+<ul>
+<li><strong>master</strong>: 控制节点（登录节点 + 作业调度管理）</li>
+<li><strong>node1</strong>: 计算节点</li>
+<li><strong>node2</strong>: 计算节点</li>
+</ul>
+<hr>
+<h2 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h2><h3 id="1-1-网络配置"><a href="#1-1-网络配置" class="headerlink" title="1.1 网络配置"></a>1.1 网络配置</h3><p>确保三台服务器之间可以互相通信：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># /etc/hosts 配置示例</span></span><br><span class="line">192.168.1.10  master</span><br><span class="line">192.168.1.11  node1</span><br><span class="line">192.168.1.12  node2</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-时间同步"><a href="#1-2-时间同步" class="headerlink" title="1.2 时间同步"></a>1.2 时间同步</h3><p>所有节点需要保持时间一致：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在所有节点上安装 chrony</span></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install chrony</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> chronyd</span><br><span class="line">sudo systemctl start chronyd</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-防火墙配置"><a href="#1-3-防火墙配置" class="headerlink" title="1.3 防火墙配置"></a>1.3 防火墙配置</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># SLURM 使用的端口</span></span><br><span class="line"><span class="comment"># Slurmctld: 6817/tcp</span></span><br><span class="line"><span class="comment"># Slurmd: 6818/tcp</span></span><br><span class="line"><span class="comment"># Slurmdbd: 6819/tcp</span></span><br><span class="line"></span><br><span class="line">sudo ufw allow 6817/tcp</span><br><span class="line">sudo ufw allow 6818/tcp</span><br><span class="line">sudo ufw allow 6819/tcp</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-创建-munge-用户和组"><a href="#1-4-创建-munge-用户和组" class="headerlink" title="1.4 创建 munge 用户和组"></a>1.4 创建 munge 用户和组</h3><p>在所有节点上执行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo groupadd -g 1101 munge</span><br><span class="line">sudo useradd -m -c <span class="string">&quot;MUNGE Uid &#x27;N&#x27; Gid Emporium&quot;</span> -d /var/lib/munge -u 1101 -g munge -s /sbin/nologin munge</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、安装依赖和软件"><a href="#二、安装依赖和软件" class="headerlink" title="二、安装依赖和软件"></a>二、安装依赖和软件</h2><h3 id="2-1-安装-munge（所有节点）"><a href="#2-1-安装-munge（所有节点）" class="headerlink" title="2.1 安装 munge（所有节点）"></a>2.1 安装 munge（所有节点）</h3><p>Munge 用于节点间身份认证：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y munge libmunge-dev libmunge2</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-安装-SLURM-编译依赖（所有节点）"><a href="#2-2-安装-SLURM-编译依赖（所有节点）" class="headerlink" title="2.2 安装 SLURM 编译依赖（所有节点）"></a>2.2 安装 SLURM 编译依赖（所有节点）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装编译工具和依赖库</span></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y \</span><br><span class="line">    build-essential \</span><br><span class="line">    libssl-dev \</span><br><span class="line">    libmunge-dev \</span><br><span class="line">    libhwloc-dev \</span><br><span class="line">    libpam0g-dev \</span><br><span class="line">    libjson-c-dev \</span><br><span class="line">    libreadline-dev \</span><br><span class="line">    autoconf \</span><br><span class="line">    automake \</span><br><span class="line">    libtool \</span><br><span class="line">    pkg-config</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-编译安装-SLURM（所有节点）"><a href="#2-3-编译安装-SLURM（所有节点）" class="headerlink" title="2.3 编译安装 SLURM（所有节点）"></a>2.3 编译安装 SLURM（所有节点）</h3><h4 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 下载 SLURM 源码</span></span><br><span class="line"><span class="built_in">cd</span> /usr/local/src</span><br><span class="line">wget https://download.schedmd.com/slurm/slurm-24.05.2.tar.bz2</span><br><span class="line">tar -xjf slurm-24.05.2.tar.bz2</span><br><span class="line"><span class="built_in">cd</span> slurm-24.05.2</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置编译选项"><a href="#配置编译选项" class="headerlink" title="配置编译选项"></a>配置编译选项</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建 slurm 用户和组（所有节点）</span></span><br><span class="line">sudo groupadd -g 1102 slurm</span><br><span class="line">sudo useradd -m -c <span class="string">&quot;SLURM workload manager&quot;</span> -d /var/lib/slurm -u 1102 -g slurm -s /sbin/nologin slurm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置编译</span></span><br><span class="line">./configure \</span><br><span class="line">  --prefix=/usr/local/slurm \</span><br><span class="line">  --sysconfdir=/etc/slurm \</span><br><span class="line">  --with-munge=/usr \</span><br><span class="line">  --with-hwloc=/usr \</span><br><span class="line">  --enable-pam \</span><br><span class="line">  --enable-debug</span><br></pre></td></tr></table></figure>
+
+<h4 id="编译和安装"><a href="#编译和安装" class="headerlink" title="编译和安装"></a>编译和安装</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 编译（使用多核加速）</span></span><br><span class="line">make -j $(<span class="built_in">nproc</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装辅助文件"><a href="#安装辅助文件" class="headerlink" title="安装辅助文件"></a>安装辅助文件</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装 man 手册</span></span><br><span class="line"><span class="built_in">cd</span> /usr/local/src/slurm-24.05.2</span><br><span class="line">sudo make install-man</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建符号链接（可选，方便直接使用命令）</span></span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/bin/* /usr/local/bin/</span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/sbin/* /usr/local/sbin/</span><br><span class="line">sudo <span class="built_in">ln</span> -sf /usr/local/slurm/lib/* /usr/local/lib/</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-systemd-服务"><a href="#配置-systemd-服务" class="headerlink" title="配置 systemd 服务"></a>配置 systemd 服务</h4><p>创建 <code>/etc/systemd/system/slurmctld.service</code>（仅 master 节点）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/systemd/system/slurmctld.service &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">[Unit]</span><br><span class="line">Description=SLURM controller daemon</span><br><span class="line">After=network.target munge.service</span><br><span class="line">ConditionPathExists=/etc/slurm/slurm.conf</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">ExecStart=/usr/local/slurm/sbin/slurmctld -D -s</span><br><span class="line">ExecReload=/bin/kill -HUP <span class="variable">$MAINPID</span></span><br><span class="line">KillMode=process</span><br><span class="line">LimitNOFILE=65536</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=5</span><br><span class="line">User=slurm</span><br><span class="line">Group=slurm</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>创建 <code>/etc/systemd/system/slurmd.service</code>（node1、node2 节点）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/systemd/system/slurmd.service &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">[Unit]</span><br><span class="line">Description=SLURM node daemon</span><br><span class="line">After=network.target munge.service</span><br><span class="line">ConditionPathExists=/etc/slurm/slurm.conf</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">ExecStart=/usr/local/slurm/sbin/slurmd -D -s</span><br><span class="line">ExecReload=/bin/kill -HUP <span class="variable">$MAINPID</span></span><br><span class="line">KillMode=process</span><br><span class="line">LimitNOFILE=65536</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=5</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>重载 systemd 服务：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、配置-Munge"><a href="#三、配置-Munge" class="headerlink" title="三、配置 Munge"></a>三、配置 Munge</h2><h3 id="3-1-在-master-节点生成密钥"><a href="#3-1-在-master-节点生成密钥" class="headerlink" title="3.1 在 master 节点生成密钥"></a>3.1 在 master 节点生成密钥</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 生成 munge 密钥</span></span><br><span class="line">sudo /usr/sbin/create-munge-key -f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置权限</span></span><br><span class="line">sudo <span class="built_in">chown</span> -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /etc/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/lib/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/log/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 400 /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-复制密钥到计算节点"><a href="#3-2-复制密钥到计算节点" class="headerlink" title="3.2 复制密钥到计算节点"></a>3.2 复制密钥到计算节点</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 从 master 复制到 node1</span></span><br><span class="line">sudo scp /etc/munge/munge.key root@node1:/etc/munge/</span><br><span class="line">sudo scp /etc/munge/munge.key root@node2:/etc/munge/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在每个计算节点设置权限</span></span><br><span class="line"><span class="comment"># node1 和 node2 上执行</span></span><br><span class="line">sudo <span class="built_in">chown</span> munge: /etc/munge/munge.key</span><br><span class="line">sudo <span class="built_in">chmod</span> 400 /etc/munge/munge.key</span><br><span class="line">sudo <span class="built_in">chown</span> -R munge: /var/lib/munge /var/log/munge /var/run/munge</span><br><span class="line">sudo <span class="built_in">chmod</span> 700 /var/lib/munge /var/log/munge /var/run/munge</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-启动-munge-服务（所有节点）"><a href="#3-3-启动-munge-服务（所有节点）" class="headerlink" title="3.3 启动 munge 服务（所有节点）"></a>3.3 启动 munge 服务（所有节点）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">sudo systemctl start munge</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line">munge -n</span><br><span class="line">munge -n | unmunge</span><br><span class="line">remunge</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、配置-SLURM"><a href="#四、配置-SLURM" class="headerlink" title="四、配置 SLURM"></a>四、配置 SLURM</h2><h3 id="4-1-创建配置目录"><a href="#4-1-创建配置目录" class="headerlink" title="4.1 创建配置目录"></a>4.1 创建配置目录</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 所有节点上执行</span></span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /etc/slurm</span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /var/spool/slurm/ctld</span><br><span class="line">sudo <span class="built_in">mkdir</span> -p /var/spool/slurm/d</span><br><span class="line">sudo <span class="built_in">chown</span> -R slurm:slurm /var/spool/slurm</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm/ctld</span><br><span class="line">sudo <span class="built_in">chmod</span> 755 /var/spool/slurm/d</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-master-节点配置"><a href="#4-2-master-节点配置" class="headerlink" title="4.2 master 节点配置"></a>4.2 master 节点配置</h3><p>创建 <code>/etc/slurm/slurm.conf</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/slurm/slurm.conf &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">ClusterName=slurm_cluster</span><br><span class="line">SlurmctldHost=master</span><br><span class="line">SlurmctldPort=6817</span><br><span class="line">SlurmdPort=6818</span><br><span class="line">AuthType=auth/munge</span><br><span class="line">CryptoType=crypto/munge</span><br><span class="line">StateSaveLocation=/var/spool/slurm/ctld</span><br><span class="line">SlurmdSpoolDir=/var/spool/slurm/d</span><br><span class="line">SchedulerType=<span class="built_in">sched</span>/backfill</span><br><span class="line">SelectType=select/cons_tres</span><br><span class="line">SelectTypeParameters=CR_Core</span><br><span class="line">MaxJobCount=10000</span><br><span class="line">MaxArraySize=10000</span><br><span class="line">MaxStepCount=40000</span><br><span class="line">MaxTasksPerNode=128</span><br><span class="line">AccountingStorageType=accounting_storage/none</span><br><span class="line">JobAcctGatherType=jobacct_gather/none</span><br><span class="line">SlurmctldLogFile=/var/log/slurm/slurmctld.log</span><br><span class="line">SlurmdLogFile=/var/log/slurm/slurmd.log</span><br><span class="line">SlurmSchedLogFile=/var/log/slurm/slurmsched.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 节点定义</span></span><br><span class="line">NodeName=node1 NodeAddr=node1 CPUs=4 RealMemory=8192 State=UNKNOWN</span><br><span class="line">NodeName=node2 NodeAddr=node2 CPUs=4 RealMemory=8192 State=UNKNOWN</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分区定义</span></span><br><span class="line">PartitionName=compute Nodes=node1,node2 Default=YES MaxTime=INFINITE State=UP</span><br><span class="line"></span><br><span class="line"><span class="comment"># 日志目录</span></span><br><span class="line">SlurmctldPidFile=/var/run/slurmctld.pid</span><br><span class="line">SlurmdPidFile=/var/run/slurmd.pid</span><br><span class="line">SlurmdSpoolDir=/var/spool/slurm/d</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-创建-cgroup-配置"><a href="#4-3-创建-cgroup-配置" class="headerlink" title="4.3 创建 cgroup 配置"></a>4.3 创建 cgroup 配置</h3><p>创建 <code>/etc/slurm/cgroup.conf</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">tee</span> /etc/slurm/cgroup.conf &gt; /dev/null &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">CgroupAutomount=<span class="built_in">yes</span></span><br><span class="line">ConstrainCores=<span class="built_in">yes</span></span><br><span class="line">ConstrainRAMSpace=<span class="built_in">yes</span></span><br><span class="line">ConstrainSwapSpace=<span class="built_in">yes</span></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-复制配置到计算节点"><a href="#4-4-复制配置到计算节点" class="headerlink" title="4.4 复制配置到计算节点"></a>4.4 复制配置到计算节点</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 从 master 复制</span></span><br><span class="line">sudo scp /etc/slurm/slurm.conf root@node1:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/slurm.conf root@node2:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/cgroup.conf root@node1:/etc/slurm/</span><br><span class="line">sudo scp /etc/slurm/cgroup.conf root@node2:/etc/slurm/</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-创建日志目录（所有节点）"><a href="#4-5-创建日志目录（所有节点）" class="headerlink" title="4.5 创建日志目录（所有节点）"></a>4.5 创建日志目录（所有节点）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">mkdir</span> -p /var/log/slurm</span><br><span class="line">sudo <span class="built_in">chown</span> -R slurm:slurm /var/log/slurm</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、启动-SLURM-服务"><a href="#五、启动-SLURM-服务" class="headerlink" title="五、启动 SLURM 服务"></a>五、启动 SLURM 服务</h2><h3 id="5-1-启动-slurmd（node1、node2）"><a href="#5-1-启动-slurmd（node1、node2）" class="headerlink" title="5.1 启动 slurmd（node1、node2）"></a>5.1 启动 slurmd（node1、node2）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在 node1 和 node2 上执行</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">sudo systemctl start slurmd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line">sudo systemctl status slurmd</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-启动-slurmctld（master）"><a href="#5-2-启动-slurmctld（master）" class="headerlink" title="5.2 启动 slurmctld（master）"></a>5.2 启动 slurmctld（master）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在 master 上执行</span></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line">sudo systemctl status slurmctld</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-验证节点状态"><a href="#5-3-验证节点状态" class="headerlink" title="5.3 验证节点状态"></a>5.3 验证节点状态</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在 master 上执行</span></span><br><span class="line">sinfo</span><br><span class="line">scontrol show nodes</span><br><span class="line">scontrol show partition</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、验证集群"><a href="#六、验证集群" class="headerlink" title="六、验证集群"></a>六、验证集群</h2><h3 id="6-1-查看集群状态"><a href="#6-1-查看集群状态" class="headerlink" title="6.1 查看集群状态"></a>6.1 查看集群状态</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看节点信息</span></span><br><span class="line">sinfo</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出示例：</span></span><br><span class="line"><span class="comment"># PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span></span><br><span class="line"><span class="comment"># compute*     up   infinite      2   idle node1,node2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看详细节点信息</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看队列信息</span></span><br><span class="line">squeue</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-提交测试作业"><a href="#6-2-提交测试作业" class="headerlink" title="6.2 提交测试作业"></a>6.2 提交测试作业</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建测试脚本</span></span><br><span class="line"><span class="built_in">cat</span> &gt; hello.sh &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#SBATCH -J test-job</span></span><br><span class="line"><span class="comment">#SBATCH -N 1</span></span><br><span class="line"><span class="comment">#SBATCH -n 1</span></span><br><span class="line"><span class="comment">#SBATCH --time=00:05:00</span></span><br><span class="line"><span class="comment">#SBATCH -o hello-%j.out</span></span><br><span class="line"><span class="comment">#SBATCH -e hello-%j.err</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Hello from <span class="subst">$(hostname)</span>&quot;</span></span><br><span class="line">srun hostname</span><br><span class="line"><span class="built_in">date</span></span><br><span class="line"><span class="built_in">sleep</span> 30</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提交作业</span></span><br><span class="line">sbatch hello.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业状态</span></span><br><span class="line">squeue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看输出</span></span><br><span class="line"><span class="built_in">cat</span> hello-*.out</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-常用-SLURM-命令"><a href="#6-3-常用-SLURM-命令" class="headerlink" title="6.3 常用 SLURM 命令"></a>6.3 常用 SLURM 命令</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看集群状态</span></span><br><span class="line">sinfo</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业队列</span></span><br><span class="line">squeue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看作业详情</span></span><br><span class="line">scontrol show job &lt;job_id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消作业</span></span><br><span class="line">scancel &lt;job_id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看节点详情</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看分区信息</span></span><br><span class="line">scontrol show partition</span><br><span class="line"></span><br><span class="line"><span class="comment"># 交互式运行作业</span></span><br><span class="line">srun --pty bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 交互式作业分配资源</span></span><br><span class="line">salloc -N 1 -n 4 --time=01:00:00</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、常见问题排查"><a href="#七、常见问题排查" class="headerlink" title="七、常见问题排查"></a>七、常见问题排查</h2><h3 id="7-1-节点状态为-DOWN"><a href="#7-1-节点状态为-DOWN" class="headerlink" title="7.1 节点状态为 DOWN"></a>7.1 节点状态为 DOWN</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看节点状态</span></span><br><span class="line">scontrol show nodes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新设置节点为 IDLE</span></span><br><span class="line">sudo scontrol update NodeName=node1 State=IDLE</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-munge-认证失败"><a href="#7-2-munge-认证失败" class="headerlink" title="7.2 munge 认证失败"></a>7.2 munge 认证失败</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 检查 munge 服务</span></span><br><span class="line">sudo systemctl status munge</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证 munge 密钥</span></span><br><span class="line"><span class="built_in">ls</span> -la /etc/munge/munge.key</span><br><span class="line"><span class="comment"># 应该是 munge:munge 权限 400</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新启动 munge</span></span><br><span class="line">sudo systemctl restart munge</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-日志查看"><a href="#7-3-日志查看" class="headerlink" title="7.3 日志查看"></a>7.3 日志查看</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看 slurmctld 日志</span></span><br><span class="line"><span class="built_in">tail</span> -f /var/log/slurm/slurmctld.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 slurmd 日志（计算节点）</span></span><br><span class="line"><span class="built_in">tail</span> -f /var/log/slurm/slurmd.log</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-4-编译相关问题"><a href="#7-4-编译相关问题" class="headerlink" title="7.4 编译相关问题"></a>7.4 编译相关问题</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 如果遇到找不到库的问题</span></span><br><span class="line"><span class="comment"># 检查 pkg-config 是否能找到库</span></span><br><span class="line">pkg-config --libs munge</span><br><span class="line">pkg-config --libs hwloc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果找不到，检查库文件位置</span></span><br><span class="line">ldconfig -p | grep munge</span><br><span class="line">ldconfig -p | grep hwloc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加库路径（如果需要）</span></span><br><span class="line">sudo <span class="built_in">echo</span> <span class="string">&quot;/usr/local/lib&quot;</span> &gt;&gt; /etc/ld.so.conf</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、参考资源"><a href="#八、参考资源" class="headerlink" title="八、参考资源"></a>八、参考资源</h2><ul>
+<li><a href="https://slurm.schedmd.com/documentation.html">SLURM 官方文档</a></li>
+<li><a href="https://slurm.schedmd.com/configurator.html">SLURM 配置生成器</a></li>
+<li><a href="https://www.schedmd.com/downloads.php">SLURM 源码下载</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>slurm</tag>
       </tags>
   </entry>
   <entry>
@@ -128,127 +348,8 @@
         <category>Solver</category>
       </categories>
       <tags>
-        <tag>Julia</tag>
         <tag>JuMP</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Cplex Callback 的两种方式</title>
-    <url>/2022/08/30/CplexCallback/</url>
-    <content><![CDATA[<p>在 <code>Cplex</code> 中存在两种 <code>Callback</code> 方式, 一种是特定的 <code>Callback</code> 调用, 一种则是通用的 <code>Callback</code> 调用. 即</p>
-<ul>
-<li><code>lazyconstraint</code>, <code>usercut</code>, <code>heuristic</code>, <code>branch</code></li>
-<li><code>general callback</code><br>其中特定的 <code>Callback</code> 之间彼此是相互独立的, 其不同的回调对应着不同的 <code>wherefrom</code> 值</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th align="left"><code>Callback</code></th>
-<th align="left"><code>wherefrom</code></th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><code>lazyconstraint</code></td>
-<td align="left"><code>CPX_CALLBACK_MIP_CUT_FEAS</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_UNBD    </code></td>
-</tr>
-<tr>
-<td align="left"><code>usercut</code></td>
-<td align="left"><code>CPX_CALLBACK_MIP_CUT_LOOP</code>&#x2F;<code>CPX_CALLBACK_MIP_CUT_LAST</code></td>
-</tr>
-<tr>
-<td align="left"><code>heuristic</code></td>
-<td align="left"><code>CPX_CALLBACK_MIP_HEURISTIC</code></td>
-</tr>
-<tr>
-<td align="left"><code>branch</code></td>
-<td align="left"><code>CPX_CALLBACK_MIP_BRANCH</code></td>
-</tr>
-</tbody></table>
-<p>而通用的 <code>Callback</code> 则是一种连贯的调用方式, 即在一个回调函数中根据不同的上下文信息 (context) 判断所处的求解阶段, 从而进行不同的处理, 这种回调方式依赖于 <code>context</code>, 其取值包括</p>
-<ul>
-<li><code>CPX_CALLBACKCONTEXT_THREAD_UP</code></li>
-<li><code>CPX_CALLBACKCONTEXT_THREAD_DOWN</code></li>
-<li><code>CPX_CALLBACKCONTEXT_CANDIDATE</code></li>
-<li><code>CPX_CALLBACKCONTEXT_LOCAL_PROGRESS</code></li>
-<li><code>CPX_CALLBACKCONTEXT_GLOBAL_PROGRESS</code></li>
-<li><code>CPX_CALLBACKCONTEXT_RELAXATION</code></li>
-<li><code>CPX_CALLBACKCONTEXT_BRANCHING</code></li>
-</ul>
-<p>显然, 后者或许是一种更方便且通用的回调方式. 比如, 当我们想要实现 <code>lazyconstraint</code> 和 <code>branch</code> 这两种回调, 依赖 <code>wherefrom</code> 我们需要编写两种回调函数. 而依赖于 <code>context</code> 实现回调时, 我们仅需编写一个通用的回调函数. 关于 <code>Benders Decomposition</code> 的两种实现方式可以参考 <code>Cplex</code> 下 <code>cplex/example/src/c</code> 文件夹下 <code>bendersatsp1.c\bendersatsp2.c</code></p>
-<h2 id="Julia-中-Cplex-jl-实现的-Callback-方式"><a href="#Julia-中-Cplex-jl-实现的-Callback-方式" class="headerlink" title="Julia 中 Cplex.jl 实现的 Callback 方式"></a>Julia 中 Cplex.jl 实现的 Callback 方式</h2><p>在 <code>Julia</code> 中 <code>Cplex</code> 接口已经放弃了依赖于 <code>wherefrom</code> 的方式, 而是保留了依赖于 <code>context</code> 的回调方式. 不过 <code>Cplex.jl</code> 也提供了自己的特定 <code>Callback</code> 接口</p>
-<ul>
-<li><code>lazyconstraint</code></li>
-<li><code>usercut</code></li>
-<li><code>heuristic</code></li>
-</ul>
-<p>这里以 <code>Benders Decomposition</code> 为例, 给出两种实现方式以观察两种实现方式的区别</p>
-<h3 id="特定-Callback"><a href="#特定-Callback" class="headerlink" title="特定 Callback"></a>特定 <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> LazyCons(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> UserCut(cb_data::CPLEX.CallbackContext)</span><br><span class="line">    vars_value = callback_value.(cb_data, vars)</span><br><span class="line">    <span class="comment"># compute violation</span></span><br><span class="line">    <span class="keyword">if</span> violation</span><br><span class="line">        con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">        MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.LazyConstraintCallback(), LazyCons)</span><br><span class="line">MOI.set(model, MOI.UserCutCallback(), UserCut)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
-
-<h3 id="General-Callback"><a href="#General-Callback" class="headerlink" title="General Callback"></a>General <code>Callback</code></h3><figure class="highlight julia"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> JuMP, CPLEX</span><br><span class="line"></span><br><span class="line">model = direct_model(CPLEX.Optimizer())</span><br><span class="line">set_slient(model)</span><br><span class="line"></span><br><span class="line">MOI.set(model, MOI.NumberOfThreads(), <span class="number">1</span>) <span class="comment"># 仅允许单线程方式调用</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@variable</span>(model, )</span><br><span class="line"><span class="meta">@objective</span>(model, )</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> callback_function(cb_data::CPLEX.CallbackContext, context_id::<span class="built_in">Clong</span>)</span><br><span class="line">    <span class="keyword">if</span> context_id == CPX_CALLBACKCONTEXT_CANDIDATE</span><br><span class="line">        stat = CPXcallbackcandidateispoint(cb_data, ispoint_p)</span><br><span class="line">        <span class="meta">@assert</span> stat == <span class="number">0</span> <span class="string">&quot;get candidate failed&quot;</span></span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.LazyConstraint(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">elseif</span> context_id == CPX_CALLBACKCONTEXT_RELAXATION</span><br><span class="line">        CPLEX.load_callback_variable_primal(cb_data, context_id)</span><br><span class="line">        vars_value = callback_value.(cb_data, vars)</span><br><span class="line">        <span class="comment"># compute violation</span></span><br><span class="line">        <span class="keyword">if</span> violation</span><br><span class="line">            con = <span class="meta">@build_constraint</span>( violation_con )</span><br><span class="line">            MOI.submit(model, MOI.UserCut(cb_data), con)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">MOI.set(model, CPLEX.CallbackFunction(), callback_function)</span><br><span class="line"></span><br><span class="line">optimize!(model)</span><br></pre></td></tr></table></figure>
-<p>更多具体细节可以参考 <a href="https://github.com/jump-dev/CPLEX.jl">CPLEX.jl</a></p>
-]]></content>
-      <categories>
-        <category>MIP</category>
-        <category>Solver</category>
-      </categories>
-      <tags>
         <tag>Julia</tag>
-        <tag>JuMP</tag>
-        <tag>Cplex</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Julia中的混合编程</title>
-    <url>/2022/11/01/MixedProg/</url>
-    <content><![CDATA[<h1 id="Julia-混合编程"><a href="#Julia-混合编程" class="headerlink" title="Julia 混合编程"></a>Julia 混合编程</h1><h2 id="混合编程的需要"><a href="#混合编程的需要" class="headerlink" title="混合编程的需要"></a>混合编程的需要</h2><p>在数值计算领域, 尽管有很多用其它语言写的高质量且成熟的库都可以用 Julia 重写, 但为了便捷利用现有的代码, 我们可能想要直接调用已有的语言代码.<br>当然这不仅仅发生在数值计算领域, 有时我们可能已经用其他语言完成了部分代码的编写, 但是由于某些原因, 我们可能需要使用 Julia 语言实现一些新的需求. 这些新的需求可能基于我们已有的实现, 此时为了避免重复编写代码, 我们在 Julia 中调用这些已实现的代码. </p>
-<p>Julia 中存在一些可用的库帮助我们做这些事情, 如 <a href="https://github.com/JuliaInterop/Cxx.jl">Cxx.jl</a>, <a href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a>, <a href="https://github.com/JuliaInterop/MATLAB.jl">MATLAB.jl</a>.</p>
-<h2 id="Cxx-jl"><a href="#Cxx-jl" class="headerlink" title="Cxx.jl"></a>Cxx.jl</h2><p>Cxx.jl 帮助我们调用 C++ 代码</p>
-<h2 id="PyCall-jl"><a href="#PyCall-jl" class="headerlink" title="PyCall.jl"></a>PyCall.jl</h2><p>PyCall.jl 帮助我们调用 Python 代码</p>
-<h2 id="MATLAB-jl"><a href="#MATLAB-jl" class="headerlink" title="MATLAB.jl"></a>MATLAB.jl</h2><p>MATLAB.jl 帮助我们调用 Matlab 代码</p>
-<h2 id="调用-C-代码"><a href="#调用-C-代码" class="headerlink" title="调用 C 代码"></a>调用 C 代码</h2><p>C 代码的调用方式</p>
-]]></content>
-      <categories>
-        <category>Julia</category>
-      </categories>
-      <tags>
-        <tag>Julia</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Cplex 回调函数分类</title>
-    <url>/2022/11/01/ClassifyCplexCB/</url>
-    <content><![CDATA[<h1 id="Cplex-回调函数分类"><a href="#Cplex-回调函数分类" class="headerlink" title="Cplex 回调函数分类"></a>Cplex 回调函数分类</h1><p>在利用 <code>Cplex</code> 求解问题的过程中, 我们可能会或多或少的利用 <code>Cplex</code> 的 <code>Callback</code> 函数来获取我们需要的东西.</p>
-]]></content>
-      <categories>
-        <category>MIP</category>
-        <category>Solver</category>
-      </categories>
-      <tags>
-        <tag>Cplex</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>用 Python 调用求解器（Linux）</title>
-    <url>/2023/05/28/pythonAPIforSlover/</url>
-    <content><![CDATA[<h1 id="Python-调用-CPLEX-接口"><a href="#Python-调用-CPLEX-接口" class="headerlink" title="Python 调用 CPLEX 接口"></a>Python 调用 CPLEX 接口</h1><h2 id="配置-Python"><a href="#配置-Python" class="headerlink" title="配置 Python"></a>配置 Python</h2><p>首先确认本地有 Python 环境，并且该 Python 版本与 CPLEX 支持的版本一致。可在 CPLEX 文件夹下查看支持的 Python 版本。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 这里以cplex-20.1版本为例</span></span><br><span class="line">@hostname$ <span class="built_in">ls</span> cplex201/cplex/python</span><br><span class="line">3.7 3.8</span><br></pre></td></tr></table></figure>
-<p>以下描述以<code>3.8</code>版本为例。如果 Python 版本与 CPLEX 支持的版本不一致，则需要重新配置 Python 环境。建议使用 <code>Miniconda</code> 管理 Python 环境。<br>从官网下载最新的 <code>Miniconda</code>，然后配置一个 <code>Python3.8</code> 的使用环境</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">@hostname$ conda create -n mypy3.8 python=3.8</span><br><span class="line"><span class="comment"># 激活环境</span></span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line"><span class="comment"># 此时会提醒你需要 init shell 环境。输入如下命令</span></span><br><span class="line">@hostname$ conda init bash</span><br><span class="line"><span class="comment"># 然后 exit 退出当前 shell 环境</span></span><br></pre></td></tr></table></figure>
-<p>在退出当前终端环境后，再重新打开终端环境。然后按如下方式激活<code>mypy3.8</code>环境</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(base) @hostname$</span><br><span class="line"><span class="comment"># 停用当前 base 环境</span></span><br><span class="line">(base) @hostname$ conda deactivate</span><br><span class="line">@hostname$ conda activate mypy3.8</span><br><span class="line">(mypy3.8) @hostname$ <span class="built_in">which</span> python3</span><br><span class="line">~/.conda/envs/mypy3.8/bin/python3</span><br></pre></td></tr></table></figure>
-<h2 id="配置-CPLEX-接口"><a href="#配置-CPLEX-接口" class="headerlink" title="配置 CPLEX 接口"></a>配置 CPLEX 接口</h2><p>首先下载支持 CPLEX 使用的第三方库</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ pip install docplex</span><br></pre></td></tr></table></figure>
-<p>安装成功后，配置环境变量（docplex 默认搜索本地 CPLEX 所需的环境变量）。打开 <code>.bashrc</code>，并添加</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> PYTHONPATH=/CPLEXHOMEPATH/cplex/python/3.8/x86-64_linux</span><br><span class="line"><span class="comment"># CPLEXHOMEPATH 指 CPLEX 安装路径</span></span><br></pre></td></tr></table></figure>
-<p>之后执行 <code>source ~/.bashrc</code> 即可。<br>可执行</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(mypy3.8) @hostname$ python3 /CPLEXHOMEPATH/python/examples/mp/modeling/diet.py</span><br></pre></td></tr></table></figure>
-<p>查看是否正确执行。</p>
-]]></content>
-      <categories>
-        <category>Solver</category>
-      </categories>
-      <tags>
-        <tag>CPLEX</tag>
       </tags>
   </entry>
 </search>
