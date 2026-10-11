@@ -489,24 +489,3 @@
 
 </body>
 </html>
-n () {
-        var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        root.setAttribute('data-theme', next);
-        try { localStorage.setItem('theme', next); } catch (e) {}
-        btn.innerHTML = '<i class="' + icon(next) + '"></i>';
-        btn.setAttribute('aria-label', label(next));
-      });
-
-      bar.appendChild(btn);
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', mount);
-    } else {
-      mount();
-    }
-  })();
-</script>
-
-</body>
-</html>
