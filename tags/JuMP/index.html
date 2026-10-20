@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
+<meta name="theme-color" content="#f2f5f9">
 <meta name="generator" content="Hexo 6.1.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="mask-icon" href="/images/logo.svg" color="#f2f5f9">
 
 <link rel="stylesheet" href="/css/main.css">
 
@@ -55,6 +55,9 @@
       }
     } catch (e) {}
     document.documentElement.setAttribute('data-theme', theme);
+
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0a0e14' : '#f2f5f9');
   })();
 </script>
 
@@ -494,6 +497,9 @@
         try { localStorage.setItem('theme', next); } catch (e) {}
         btn.innerHTML = '<i class="' + icon(next) + '"></i>';
         btn.setAttribute('aria-label', label(next));
+
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', next === 'dark' ? '#0a0e14' : '#f2f5f9');
       });
 
       bar.appendChild(btn);
@@ -503,6 +509,68 @@
       document.addEventListener('DOMContentLoaded', mount);
     } else {
       mount();
+    }
+  })();
+</script>
+
+<script>
+  // 文章页眉标：NOTE / 分类。分类本身已在 meta 中，这里只取一次
+  // 作为视觉上的「栏目」，让标题层级更清楚。
+  (function () {
+    function addKicker() {
+      var header = document.querySelector('.content.post .post-header');
+      if (!header || header.querySelector('.post-kicker')) return;
+
+      var title = header.querySelector('.post-title');
+      if (!title) return;
+
+      var category = header.querySelector('span[itemprop="about"] a');
+      var label = category
+        ? (category.querySelector('span[itemprop="name"]') || category).textContent.trim()
+        : null;
+
+      var kicker = document.createElement('div');
+      kicker.className = 'post-kicker';
+      kicker.innerHTML = '<span class="post-kicker-label">NOTE</span>' +
+        (label ? '<span class="post-kicker-sep">/</span><span></span>' : '');
+      if (label) kicker.lastChild.textContent = label;
+
+      header.insertBefore(kicker, title);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addKicker);
+    } else {
+      addKicker();
+    }
+  })();
+</script>
+
+<script>
+  // 自动编号只服务于「没有编号」的文章。作者已经用
+  // 「一、」「1.」「1.1」编号时，CSS 计数器会让标题出现双编号。
+  (function () {
+    function guardHeadingNumbers() {
+      var body = document.querySelector('.content.post .post-body');
+      if (!body) return;
+
+      var headings = body.querySelectorAll('h2');
+      var ownNumber = /^(\d+[.、]|[一二三四五六七八九十]+、)/;
+
+      for (var i = 0; i < headings.length; i++) {
+        if (ownNumber.test(headings[i].textContent.trim())) {
+          body.classList.add('no-heading-numbers');
+          var toc = document.querySelector('.post-toc');
+          if (toc) toc.classList.add('no-toc-numbers');
+          return;
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', guardHeadingNumbers);
+    } else {
+      guardHeadingNumbers();
     }
   })();
 </script>
